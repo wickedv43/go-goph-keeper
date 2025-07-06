@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "./internal/api";
+
+import "google/protobuf/empty.proto";
+
+
+service GophKeeper {
+  // Register registers a new user.
+  rpc Register (RegisterRequest) returns (RegisterResponse);
+  // Login logs in a user and returns an auth token.
+  rpc Login (LoginRequest) returns (LoginResponse);
+}
+
+message RegisterRequest {
+  string email = 1; // Email of the user to register.
+  string password = 2; // Password of the user to register.
+}
+
+message RegisterResponse {
+  int64 user_id = 1; // User ID of the registered user.
+}
+
+message LoginRequest {
+  string email = 1; // Email of the user to login.
+  string password = 2; // Password of the user to login.
+  int32 app_id = 3; // ID of the app to login to.
+}
+
+message LoginResponse {
+  string token = 1; // Auth token of the logged in user.
+}
