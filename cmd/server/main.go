@@ -33,7 +33,15 @@ func main() {
 	do.Provide(i, storage.NewStorage)
 
 	log := do.MustInvoke[*logger.Logger](i).Named("GophKeeper")
-	log.Info("starting app...")
+	log.Debug("starting app...")
+
+	do.Provide(i, func(i do.Injector) (service.GophKeeper, error) {
+		return service.NewService(i)
+	})
+
+	do.Provide(i, func(i do.Injector) (storage.DataKeeper, error) {
+		return storage.NewStorage(i)
+	})
 
 	go do.MustInvoke[*server.Server](i).Start()
 
@@ -44,5 +52,5 @@ func main() {
 		log.Error(err)
 	}
 
-	log.Info("grace shutdown")
+	log.Debug("grace shutdown")
 }

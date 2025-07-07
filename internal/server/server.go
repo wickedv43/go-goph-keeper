@@ -7,6 +7,7 @@ import (
 	pb "github.com/wickedv43/go-goph-keeper/internal/api"
 	"github.com/wickedv43/go-goph-keeper/internal/config"
 	"github.com/wickedv43/go-goph-keeper/internal/logger"
+	"github.com/wickedv43/go-goph-keeper/internal/service"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
 )
@@ -17,8 +18,8 @@ type Server struct {
 	// GRPC is the underlying gRPC server instance.
 	GRPC *grpc.Server
 
-	// Service
-	// Service url.Shortener
+	// service
+	service service.GophKeeper
 
 	cfg *config.Config
 	log *zap.SugaredLogger
@@ -26,9 +27,9 @@ type Server struct {
 
 func NewServer(i do.Injector) (*Server, error) {
 	s := &Server{
-
-		cfg: do.MustInvoke[*config.Config](i),
-		log: do.MustInvoke[*logger.Logger](i).Named("server"),
+		service: do.MustInvoke[service.GophKeeper](i),
+		cfg:     do.MustInvoke[*config.Config](i),
+		log:     do.MustInvoke[*logger.Logger](i).Named("server"),
 	}
 
 	grpcServer := grpc.NewServer(
@@ -48,7 +49,7 @@ func NewServer(i do.Injector) (*Server, error) {
 }
 
 func (s *Server) Start() {
-	s.log.Infof("grpc server port: " + s.cfg.Server.Port)
+	s.log.Debugf("grpc server port: " + s.cfg.Server.Port)
 	listen, err := net.Listen("tcp", ":"+s.cfg.Server.Port)
 	if err != nil {
 		s.log.Fatal("failed to listen")
@@ -60,6 +61,6 @@ func (s *Server) Start() {
 }
 
 func (s *Server) Shutdown() {
-	s.log.Infof("grpc shutdown complete ")
+	s.log.Debug("grpc shutdown complete ")
 	s.GRPC.GracefulStop()
 }

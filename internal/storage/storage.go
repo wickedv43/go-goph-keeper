@@ -61,6 +61,8 @@ func (s *Storage) Shutdown() error {
 	if err = sqlDB.Close(); err != nil {
 		return errors.Wrap(err, "close db")
 	}
+
+	s.log.Debug("database connection closed")
 	return nil
 }
 
@@ -74,7 +76,7 @@ func (s *Storage) HealthCheck() error {
 		s.log.Debug("database connection is unhealthy")
 	}
 
-	s.log.Info("Database health check: [ok]")
+	s.log.Debug("Database health check: [ok]")
 
 	return nil
 }
@@ -88,6 +90,6 @@ func (s *Storage) Migrate() error {
 		return err
 	}
 
-	s.log.Info("Successfully migrated")
+	s.log.Debug("successfully migrated")
 	return nil
 }

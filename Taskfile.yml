@@ -7,6 +7,9 @@ tasks:
     go run ./cmd/client/.
 
 
+  docker:
+    docker run --name my-postgres -e POSTGRES_USER=username -e POSTGRES_PASSWORD=password -e POSTGRES_DB=praktikum -p 5432:5432 -d postgres
+
   protoc:
     cmds:
       - go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
