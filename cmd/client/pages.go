@@ -95,8 +95,8 @@ func (g *GophKeeper) RegisterPage() tview.Primitive {
 			g.pages.SwitchToPage("Login")
 		}).
 		SetBorder(true).
-		SetTitle("GophKeeper").
-		SetTitleAlign(tview.AlignCenter)
+		SetTitle("Register").
+		SetTitleAlign(tview.AlignLeft)
 
 	// «Модалка» с формой и текстом ошибки
 	modal := tview.NewFlex().SetDirection(tview.FlexRow).
