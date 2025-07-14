@@ -4,7 +4,7 @@ tasks:
   server:
     go run ./cmd/server/. -c=./config/config.local.yaml
   client:
-    go run ./cmd/client/.
+    go run ./cmd/client/. -c=./config/config.local.yaml
 
 
   docker:

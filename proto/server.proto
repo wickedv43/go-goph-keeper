@@ -15,7 +15,7 @@ service GophKeeper {
 }
 
 message RegisterRequest {
-  string email = 1; // Email of the user to register.
+  string login = 1; // Email of the user to register.
   string password = 2; // Password of the user to register.
 }
 
@@ -24,7 +24,7 @@ message RegisterResponse {
 }
 
 message LoginRequest {
-  string email = 1; // Email of the user to login.
+  string login = 1; // Email of the user to login.
   string password = 2; // Password of the user to login.
   int32 app_id = 3; // ID of the app to login to.
 }
