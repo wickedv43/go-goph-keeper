@@ -22,6 +22,7 @@ func (g *GophKeeper) Login(email, password string) error {
 	return nil
 }
 
+// TODO: pass hash realize
 func (g *GophKeeper) Register(email, password string) error {
 	_, err := g.client.Register(g.rootCtx, &pb.RegisterRequest{
 		Login:    email,

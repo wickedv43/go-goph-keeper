@@ -33,7 +33,7 @@ func (s *Storage) NewUser(ctx context.Context, u *User) (User, error) {
 	}
 
 	// Логин свободен, создаём нового пользователя
-	if err := s.db.WithContext(ctx).Create(u).Error; err != nil {
+	if err = s.db.WithContext(ctx).Create(u).Error; err != nil {
 		return User{}, err
 	}
 

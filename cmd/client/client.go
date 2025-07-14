@@ -15,7 +15,9 @@ import (
 )
 
 type GophKeeper struct {
-	tui    *tview.Application
+	tui   *tview.Application
+	pages *tview.Pages
+
 	client api.GophKeeperClient
 
 	cfg *config.Config
@@ -25,6 +27,8 @@ type GophKeeper struct {
 }
 
 func NewGophKeeper(i do.Injector) (*GophKeeper, error) {
+	gophKeeper := &GophKeeper{}
+
 	cfg := do.MustInvoke[*config.Config](i)
 
 	target := fmt.Sprintf("localhost:%s", cfg.Server.Port)
@@ -41,22 +45,24 @@ func NewGophKeeper(i do.Injector) (*GophKeeper, error) {
 
 	ctx, cancel := context.WithCancel(context.Background())
 
-	return &GophKeeper{
-		tui:    tview.NewApplication(),
-		client: client,
-		cfg:    cfg,
+	//pages
+	pages := tview.NewPages()
+	pages.AddPage("Login", gophKeeper.LoginPage(), true, true)
+	pages.AddPage("Register", gophKeeper.RegisterPage(), true, false)
 
-		rootCtx:   ctx,
-		cancelCtx: cancel,
-	}, nil
+	//set
+	gophKeeper.rootCtx = ctx
+	gophKeeper.cancelCtx = cancel
+	gophKeeper.pages = pages
+	gophKeeper.client = client
+	gophKeeper.cfg = cfg
+	gophKeeper.tui = tview.NewApplication()
+
+	return gophKeeper, nil
 }
 
 func (g *GophKeeper) Start() {
-	menu := g.startMenu()
-
-	menu.SetBorder(true).SetTitle("GophKeeper TUI")
-
-	if err := g.tui.SetRoot(menu, true).Run(); err != nil {
+	if err := g.tui.SetRoot(g.pages, true).Run(); err != nil {
 		panic(err)
 	}
 }
