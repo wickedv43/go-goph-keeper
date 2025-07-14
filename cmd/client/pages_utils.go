@@ -25,3 +25,18 @@ func buildModal(form tview.Primitive, errorText *tview.TextView, width, height, 
 
 	return wrapper
 }
+
+func dropdownIndex(rt string) int {
+	switch rt {
+	case "login":
+		return 0
+	case "note":
+		return 1
+	case "card":
+		return 2
+	case "binary":
+		return 3
+	default:
+		return 0
+	}
+}
