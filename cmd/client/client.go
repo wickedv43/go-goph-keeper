@@ -52,7 +52,7 @@ func NewGophKeeper(i do.Injector) (*GophKeeper, error) {
 }
 
 func (g *GophKeeper) Start() {
-	menu := g.mainMenu()
+	menu := g.startMenu()
 
 	menu.SetBorder(true).SetTitle("GophKeeper TUI")
 

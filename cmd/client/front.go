@@ -5,7 +5,7 @@ import (
 	"github.com/rivo/tview"
 )
 
-func (g *GophKeeper) mainMenu() *tview.List {
+func (g *GophKeeper) startMenu() *tview.List {
 	menu := tview.NewList().
 		AddItem("Login", "", 'l', func() {
 			g.showLogin()
@@ -17,6 +17,21 @@ func (g *GophKeeper) mainMenu() *tview.List {
 			g.tui.Stop()
 		})
 	menu.SetBorder(true).SetTitle("GophKeeper TUI").SetTitleAlign(tview.AlignLeft)
+	return menu
+}
+
+func (g *GophKeeper) mainMenu() *tview.List {
+	menu := tview.NewList().
+		AddItem("Create", "", 'c', func() {
+			g.showLogin()
+		}).
+		AddItem("List", "", 'l', func() {
+			g.showRegister()
+		}).
+		AddItem("Quit", "", 'q', func() {
+			g.tui.Stop()
+		})
+	menu.SetBorder(true).SetTitle("GophKeeper").SetTitleAlign(tview.AlignLeft)
 	return menu
 }
 
@@ -43,7 +58,7 @@ func (g *GophKeeper) showLogin() {
 			}
 		}).
 		AddButton("Back", func() {
-			g.tui.SetRoot(g.mainMenu(), true)
+			g.tui.SetRoot(g.startMenu(), true)
 		})
 
 	form.SetBorder(true).SetTitle("Login").SetTitleAlign(tview.AlignLeft)
@@ -74,11 +89,11 @@ func (g *GophKeeper) showRegister() {
 				errorText.SetText("[red]" + err.Error())
 			} else {
 				// Успешная регистрация — можно вернуть на главную
-				g.tui.SetRoot(g.mainMenu(), true)
+				g.tui.SetRoot(g.startMenu(), true)
 			}
 		}).
 		AddButton("Back", func() {
-			g.tui.SetRoot(g.mainMenu(), true)
+			g.tui.SetRoot(g.startMenu(), true)
 		})
 
 	form.SetBorder(true).SetTitle("Register").SetTitleAlign(tview.AlignLeft)

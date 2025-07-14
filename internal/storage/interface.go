@@ -15,6 +15,7 @@ type DataKeeper interface {
 	//users
 	NewUser(ctx context.Context, u *User) (User, error)
 	User(ctx context.Context, id uint64) (User, error)
+	UserByLogin(ctx context.Context, login string) (User, error)
 
 	Shutdown() error
 }
@@ -47,5 +48,14 @@ func (s *Storage) User(ctx context.Context, id uint64) (User, error) {
 		return User{}, result.Error
 	}
 
+	return user, nil
+}
+
+func (s *Storage) UserByLogin(ctx context.Context, login string) (User, error) {
+	var user User
+	result := s.db.WithContext(ctx).Where("login = ?", login).First(&user)
+	if result.Error != nil {
+		return User{}, result.Error
+	}
 	return user, nil
 }

@@ -10,6 +10,7 @@ type GophKeeper interface {
 	//users
 	NewUser(ctx context.Context, u *storage.User) (storage.User, error)
 	User(ctx context.Context, id uint64) (storage.User, error)
+	UserByLogin(ctx context.Context, login string) (storage.User, error)
 }
 
 func (s *Service) NewUser(ctx context.Context, u *storage.User) (storage.User, error) {
@@ -18,4 +19,8 @@ func (s *Service) NewUser(ctx context.Context, u *storage.User) (storage.User, e
 
 func (s *Service) User(ctx context.Context, id uint64) (storage.User, error) {
 	return s.storage.User(ctx, id)
+}
+
+func (s *Service) UserByLogin(ctx context.Context, login string) (storage.User, error) {
+	return s.storage.UserByLogin(ctx, login)
 }

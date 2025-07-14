@@ -30,7 +30,7 @@ func (s *Server) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.Regi
 }
 
 func (s *Server) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginResponse, error) {
-	user, err := s.service.FindUserByLogin(ctx, in.Login)
+	user, err := s.service.UserByLogin(ctx, in.Login)
 	if err != nil {
 		return nil, status.Error(codes.NotFound, "пользователь не найден")
 	}
@@ -39,8 +39,9 @@ func (s *Server) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginRespo
 		return nil, status.Error(codes.Unauthenticated, "неверный пароль")
 	}
 
+	token := "iamtokenstring"
+
 	return &pb.LoginResponse{
-		UserId: user.ID,
-		Login:  user.Login,
+		Token: token,
 	}, nil
 }
