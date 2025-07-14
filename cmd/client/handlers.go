@@ -5,14 +5,15 @@ import (
 )
 
 func (g *GophKeeper) Login(email, password string) error {
-	_, err := g.client.Login(g.rootCtx, &pb.LoginRequest{
+	resp, err := g.client.Login(g.rootCtx, &pb.LoginRequest{
 		Login:    email,
 		Password: g.hashPassword(password),
 	})
-
 	if err != nil {
 		return err
 	}
+
+	g.token = resp.GetToken()
 
 	return nil
 }
@@ -29,4 +30,8 @@ func (g *GophKeeper) Register(email, password string) error {
 	}
 
 	return nil
+}
+
+func (g *GophKeeper) ListVaults() (*pb.ListVaultsResponse, error) {
+	return g.client.ListVaults(g.authCtx(), &pb.ListVaultsRequest{})
 }

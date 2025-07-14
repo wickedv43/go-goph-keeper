@@ -24,42 +24,41 @@ type GophKeeper struct {
 
 	rootCtx   context.Context
 	cancelCtx func()
+
+	token string
 }
 
 func NewGophKeeper(i do.Injector) (*GophKeeper, error) {
-	gophKeeper := &GophKeeper{}
-
 	cfg := do.MustInvoke[*config.Config](i)
 
 	target := fmt.Sprintf("localhost:%s", cfg.Server.Port)
-
-	cc, err := grpc.NewClient(
+	cc, err := grpc.Dial(
 		target,
 		grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}
 
-	// gRPC-клиент сервера Auth
 	client := pb.NewGophKeeperClient(cc)
-
 	ctx, cancel := context.WithCancel(context.Background())
 
-	//pages
+	tui := tview.NewApplication()
 	pages := tview.NewPages()
-	pages.AddPage("Login", gophKeeper.LoginPage(), true, true)
-	pages.AddPage("Register", gophKeeper.RegisterPage(), true, false)
-	//pages.AddPage("Main")
 
-	//set
-	gophKeeper.rootCtx = ctx
-	gophKeeper.cancelCtx = cancel
-	gophKeeper.pages = pages
-	gophKeeper.client = client
-	gophKeeper.cfg = cfg
-	gophKeeper.tui = tview.NewApplication()
+	g := &GophKeeper{
+		cfg:       cfg,
+		client:    client,
+		tui:       tui,
+		rootCtx:   ctx,
+		cancelCtx: cancel,
+		pages:     pages,
+	}
 
-	return gophKeeper, nil
+	pages.AddPage("Login", g.LoginPage(), true, true)
+	pages.AddPage("Register", g.RegisterPage(), true, false)
+	pages.AddPage("VaultList", g.VaultPage(), true, false)
+
+	return g, nil
 }
 
 func (g *GophKeeper) Start() {

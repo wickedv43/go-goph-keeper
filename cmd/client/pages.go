@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gdamore/tcell/v2"
 	"github.com/rivo/tview"
 	"google.golang.org/grpc/status"
@@ -30,6 +32,8 @@ func (g *GophKeeper) LoginPage() tview.Primitive {
 				}
 				return
 			}
+
+			g.pages.AddAndSwitchToPage("Vault", g.VaultPage(), true)
 		}).
 		AddButton("SignUp", func() {
 			g.pages.SwitchToPage("Register")
@@ -70,8 +74,9 @@ func (g *GophKeeper) RegisterPage() tview.Primitive {
 				} else {
 					errorText.SetText("[red]Ошибка: " + err.Error())
 				}
-				g.pages.SwitchToPage("Login")
+
 			}
+			g.pages.SwitchToPage("Login")
 		}).
 		AddButton("Back", func() {
 			g.pages.SwitchToPage("Login")
@@ -81,4 +86,48 @@ func (g *GophKeeper) RegisterPage() tview.Primitive {
 		SetTitleAlign(tview.AlignLeft)
 
 	return buildModal(form, errorText, 60, 12, 5)
+}
+
+func (g *GophKeeper) VaultPage() tview.Primitive {
+	// Левый список
+	list := tview.NewList()
+
+	// Правая панель — подробности
+	details := tview.NewTextView()
+
+	// Загружаем записи
+	vaults, err := g.ListVaults()
+	if err != nil {
+		details.SetText("[red]Ошибка загрузки: " + err.Error())
+	} else {
+		for _, v := range vaults.Vaults {
+			list.AddItem(v.Title, "", 0, func() {
+				// Показать расшифрованную/отформатированную запись
+				details.SetTitle(fmt.Sprintf(
+					"[yellow]Тип: [white]%s\n[yellow]Метаданные: [white]%s\n[yellow]Encrypted: [white]%x",
+					v.Type, v.Metadata, v.EncryptedData,
+				))
+			})
+		}
+	}
+
+	details.
+		SetDynamicColors(true).
+		SetWrap(true).
+		SetBorder(true).
+		SetTitle(" Details ")
+
+	list.
+		ShowSecondaryText(false).
+		SetBorder(true).
+		SetTitle(" Vaults ")
+
+	// Grid: 2 столбца — список и детальный просмотр
+	grid := tview.NewGrid().
+		SetRows(0).        // одна строка
+		SetColumns(30, 0). // список: 30 ширина, остальное — деталь
+		AddItem(list, 0, 0, 1, 1, 0, 0, true).
+		AddItem(details, 0, 1, 1, 1, 0, 0, false)
+
+	return grid
 }

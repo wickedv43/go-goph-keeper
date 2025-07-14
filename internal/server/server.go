@@ -32,13 +32,18 @@ func NewServer(i do.Injector) (*Server, error) {
 		log:     do.MustInvoke[*logger.Logger](i).Named("server"),
 	}
 
+	excluded := map[string]bool{
+		"/api.GophKeeper/Register": true,
+		"/api.GophKeeper/Login":    true,
+	}
+
 	grpcServer := grpc.NewServer(
-	//grpc.UnaryInterceptor(
-	//	ChainUnaryInterceptors(
-	//		s.LogUnaryInterceptor(),
-	//		s.AuthInterceptor(),
-	//	),
-	//),
+		grpc.UnaryInterceptor(
+			ChainUnaryInterceptors(
+				s.LogUnaryInterceptor(),
+				s.AuthInterceptor(excluded),
+			),
+		),
 	)
 
 	s.GRPC = grpcServer
