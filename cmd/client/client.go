@@ -49,6 +49,7 @@ func NewGophKeeper(i do.Injector) (*GophKeeper, error) {
 	pages := tview.NewPages()
 	pages.AddPage("Login", gophKeeper.LoginPage(), true, true)
 	pages.AddPage("Register", gophKeeper.RegisterPage(), true, false)
+	//pages.AddPage("Main")
 
 	//set
 	gophKeeper.rootCtx = ctx

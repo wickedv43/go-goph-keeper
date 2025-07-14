@@ -13,6 +13,8 @@ type Config struct {
 	Server   Server   `mapstructure:"server"`
 	Database Database `mapstructure:"database"`
 
+	Master string
+
 	Envinronment string `mapstructure:"envinronment"`
 }
 
@@ -52,5 +54,6 @@ func NewConfig(i do.Injector) (*Config, error) {
 		cfg.Envinronment = enviroment
 	}
 
+	cfg.Master = viper.GetString("master")
 	return &cfg, nil
 }

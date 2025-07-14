@@ -1,3 +1,4 @@
+//go:generate go run generate/main.go
 package main
 
 import (
@@ -8,6 +9,12 @@ import (
 	"github.com/samber/do/v2"
 	"github.com/wickedv43/go-goph-keeper/internal/config"
 	"github.com/wickedv43/go-goph-keeper/internal/logger"
+)
+
+var (
+	buildVersion = "N/A"
+	buildDate    = "N/A"
+	buildCommit  = "N/A"
 )
 
 var configPath = flag.String("c", "config.yaml", "path to config file")

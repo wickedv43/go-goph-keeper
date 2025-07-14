@@ -1,6 +1,9 @@
 version: '3'
 
 tasks:
+  generate:
+    go generate ./cmd/client/
+
   server:
     go run ./cmd/server/. -c=./config/config.local.yaml
   client:

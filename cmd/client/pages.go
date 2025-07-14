@@ -10,7 +10,7 @@ func (g *GophKeeper) LoginPage() tview.Primitive {
 	errorText := tview.NewTextView().
 		SetTextColor(tcell.ColorRed).
 		SetDynamicColors(true).
-		SetTextAlign(tview.AlignCenter)
+		SetTextAlign(tview.AlignLeft)
 
 	form := tview.NewForm()
 
@@ -35,28 +35,10 @@ func (g *GophKeeper) LoginPage() tview.Primitive {
 			g.pages.SwitchToPage("Register")
 		}).
 		SetBorder(true).
-		SetTitle("GophKeeper").
+		SetTitle(" GophKeeper ").
 		SetTitleAlign(tview.AlignCenter)
 
-	// «Модалка» с формой и текстом ошибки
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(form, 10, 1, true).     // высота формы (примерно 10)
-		AddItem(errorText, 2, 0, false) // текст ошибки высотой 2 строки
-
-	// Центрируем модалку по горизонтали
-	leftOffset := 5
-	centered := tview.NewFlex().
-		AddItem(nil, leftOffset, 0, false). // левый отступ
-		AddItem(modal, 60, 0, true).        // ширина модалки
-		AddItem(nil, 0, 1, false)           // остальное место справа
-
-	// Центрируем по вертикали
-	wrapper := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).      // отступ сверху
-		AddItem(centered, 15, 0, true). // высота модалки 15
-		AddItem(nil, 0, 1, false)       // отступ снизу
-
-	return wrapper
+	return buildModal(form, errorText, 60, 10, 5)
 }
 
 func (g *GophKeeper) RegisterPage() tview.Primitive {
@@ -88,33 +70,15 @@ func (g *GophKeeper) RegisterPage() tview.Primitive {
 				} else {
 					errorText.SetText("[red]Ошибка: " + err.Error())
 				}
-				return
+				g.pages.SwitchToPage("Login")
 			}
 		}).
 		AddButton("Back", func() {
 			g.pages.SwitchToPage("Login")
 		}).
 		SetBorder(true).
-		SetTitle("Register").
+		SetTitle(" Register ").
 		SetTitleAlign(tview.AlignLeft)
 
-	// «Модалка» с формой и текстом ошибки
-	modal := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(form, 13, 1, true).     // высота формы (примерно 10)
-		AddItem(errorText, 2, 0, false) // текст ошибки высотой 2 строки
-
-	// Центрируем модалку по горизонтали
-	leftOffset := 5
-	centered := tview.NewFlex().
-		AddItem(nil, leftOffset, 0, false). // левый отступ
-		AddItem(modal, 60, 0, true).        // ширина модалки
-		AddItem(nil, 0, 1, false)           // остальное место справа
-
-	// Центрируем по вертикали
-	wrapper := tview.NewFlex().SetDirection(tview.FlexRow).
-		AddItem(nil, 0, 1, false).      // отступ сверху
-		AddItem(centered, 15, 0, true). // высота модалки 15
-		AddItem(nil, 0, 1, false)       // отступ снизу
-
-	return wrapper
+	return buildModal(form, errorText, 60, 12, 5)
 }
