@@ -78,7 +78,21 @@ func (g *GophKeeper) RegisterPage() tview.Primitive {
 				}
 
 			}
-			g.pages.SwitchToPage("Login")
+
+			modal := tview.NewModal().
+				SetText("Регистрация прошла успешно!").
+				AddButtons([]string{"OK"}).
+				SetDoneFunc(func(buttonIndex int, buttonLabel string) {
+					g.pages.SwitchToPage("Login")
+					g.pages.RemovePage("SuccessModal") // удалить модалку после показа
+				})
+
+			// Обёртка: сдвигаем модалку влево, например, оставляя справа больше места
+			centered := tview.NewFlex().
+				AddItem(nil, 5, 1, false).  // Остальное место справа
+				AddItem(modal, 60, 0, true) // Ширина модалки
+
+			g.pages.AddPage("SuccessModal", centered, true, true)
 		}).
 		AddButton("Back", func() {
 			g.pages.SwitchToPage("Login")
