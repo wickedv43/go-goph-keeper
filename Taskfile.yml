@@ -7,7 +7,9 @@ tasks:
   server:
     go run ./cmd/server/. -c=./config/config.local.yaml
   client:
-    go run ./cmd/client/. -c=./config/config.local.yaml
+    go run ./cmd/client/. login veter veter
+
+
 
   test:
     go run ./cmd/test/.

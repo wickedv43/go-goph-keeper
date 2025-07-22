@@ -3,11 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 
-	"github.com/rivo/tview"
 	"github.com/samber/do/v2"
+	"github.com/spf13/cobra"
 	"github.com/wickedv43/go-goph-keeper/internal/api"
 	"github.com/wickedv43/go-goph-keeper/internal/config"
+	"github.com/wickedv43/go-goph-keeper/internal/logger"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
@@ -15,12 +17,12 @@ import (
 )
 
 type GophKeeper struct {
-	tui   *tview.Application
-	pages *tview.Pages
+	rootCmd *cobra.Command
 
 	client api.GophKeeperClient
 
 	cfg *config.Config
+	log *logger.Logger
 
 	rootCtx   context.Context
 	cancelCtx func()
@@ -30,6 +32,7 @@ type GophKeeper struct {
 
 func NewGophKeeper(i do.Injector) (*GophKeeper, error) {
 	cfg := do.MustInvoke[*config.Config](i)
+	log := do.MustInvoke[*logger.Logger](i)
 
 	target := fmt.Sprintf("localhost:%s", cfg.Server.Port)
 	cc, err := grpc.Dial(
@@ -42,28 +45,21 @@ func NewGophKeeper(i do.Injector) (*GophKeeper, error) {
 	client := pb.NewGophKeeperClient(cc)
 	ctx, cancel := context.WithCancel(context.Background())
 
-	tui := tview.NewApplication()
-	pages := tview.NewPages()
-
 	g := &GophKeeper{
-		cfg:       cfg,
-		client:    client,
-		tui:       tui,
+		cfg:    cfg,
+		log:    log,
+		client: client,
+
 		rootCtx:   ctx,
 		cancelCtx: cancel,
-		pages:     pages,
-		token:     "",
 	}
-
-	pages.AddPage("Login", g.LoginPage(), true, true)
-	pages.AddPage("Register", g.RegisterPage(), true, false)
-	pages.AddPage("VaultCreate", g.NewVaultPage(), true, false)
 
 	return g, nil
 }
 
 func (g *GophKeeper) Start() {
-	if err := g.tui.SetRoot(g.pages, true).Run(); err != nil {
-		panic(err)
+	err := g.rootCmd.Execute()
+	if err != nil {
+		log.Fatal(err)
 	}
 }

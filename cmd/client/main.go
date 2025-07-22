@@ -2,11 +2,11 @@
 package main
 
 import (
-	"flag"
 	"os"
 	"syscall"
 
 	"github.com/samber/do/v2"
+	"github.com/spf13/cobra"
 	"github.com/wickedv43/go-goph-keeper/internal/config"
 	"github.com/wickedv43/go-goph-keeper/internal/logger"
 )
@@ -17,21 +17,32 @@ var (
 	buildCommit  = "N/A"
 )
 
-var configPath = flag.String("c", "config.yaml", "path to config file")
+var configPath string
 
 func main() {
-	flag.Parse()
+	rootCmd := &cobra.Command{
+		Use:   "gk",
+		Short: "GophKeeper CLI",
+	}
+	rootCmd.PersistentFlags().StringVarP(&configPath, "config", "c", "./config/config.local.yaml", "Путь до config.yaml")
+
+	// 👇 Парсим флаги вручную, чтобы configPath был доступен
+	rootCmd.ParseFlags(os.Args[1:])
 
 	i := do.New()
-
-	do.ProvideNamedValue(i, "config.path", *configPath) //cfg
+	do.ProvideNamedValue(i, "config.path", configPath)
 	do.Provide(i, config.NewConfig)
 	do.Provide(i, logger.NewLogger)
 	do.Provide(i, NewGophKeeper)
 
 	log := do.MustInvoke[*logger.Logger](i).Named("GophKeeper")
 
-	do.MustInvoke[*GophKeeper](i).Start()
+	gophKeeper := do.MustInvoke[*GophKeeper](i)
+	gophKeeper.rootCmd = rootCmd
+
+	gophKeeper.rootCmd.AddCommand(gophKeeper.LoginCMD())
+
+	gophKeeper.Start()
 
 	signals := []os.Signal{syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT, os.Interrupt}
 

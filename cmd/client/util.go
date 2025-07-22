@@ -5,6 +5,7 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/hex"
+	"fmt"
 
 	"google.golang.org/grpc/metadata"
 )
@@ -24,4 +25,19 @@ func (g *GophKeeper) authCtx() context.Context {
 		"authorization": "Bearer " + g.token,
 	})
 	return metadata.NewOutgoingContext(g.rootCtx, md)
+}
+
+func (g *GophKeeper) printBanner() {
+	fmt.Println(`
+   _____             _     _  __                         
+  / ____|           | |   | |/ /                         
+ | |  __  ___  _ __ | |__ | ' / ___  ___ _ __   ___ _ __ 
+ | | |_ |/ _ \| '_ \| '_ \|  < / _ \/ _ | '_ \ / _ | '__|
+ | |__| | (_) | |_) | | | | . |  __|  __| |_) |  __| |   
+  \_____|\___/| .__/|_| |_|_|\_\___|\___|\___| .__/ \___| 
+              | |                       | |              
+              |_|                       |_|              
+`)
+	fmt.Printf("📦 Версия: %s | 📅 Сборка: %s\n\n",
+		buildVersion, buildDate)
 }
