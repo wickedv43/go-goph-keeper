@@ -35,7 +35,7 @@ func (g *GophKeeper) LoginPage() tview.Primitive {
 				return
 			}
 
-			g.pages.AddAndSwitchToPage("Vault", g.VaultPage(), true)
+			g.pages.AddAndSwitchToPage("VaultList", g.VaultListPage(), true)
 		}).
 		AddButton("SignUp", func() {
 			g.pages.SwitchToPage("Register")
@@ -44,7 +44,7 @@ func (g *GophKeeper) LoginPage() tview.Primitive {
 		SetTitle(" GophKeeper ").
 		SetTitleAlign(tview.AlignCenter)
 
-	return buildModal(form, errorText, 60, 10, 5)
+	return buildModal(form, errorText, 60, 10)
 }
 
 func (g *GophKeeper) RegisterPage() tview.Primitive {
@@ -101,10 +101,10 @@ func (g *GophKeeper) RegisterPage() tview.Primitive {
 		SetTitle(" Register ").
 		SetTitleAlign(tview.AlignLeft)
 
-	return buildModal(form, errorText, 60, 12, 5)
+	return buildModal(form, errorText, 60, 12)
 }
 
-func (g *GophKeeper) VaultPage() tview.Primitive {
+func (g *GophKeeper) VaultListPage() tview.Primitive {
 	// Левый список
 	list := tview.NewList()
 
@@ -112,7 +112,7 @@ func (g *GophKeeper) VaultPage() tview.Primitive {
 	details := tview.NewTextView()
 
 	// Загружаем записи
-	vaults, err := g.ListVaults()
+	vaults, err := g.VaultList()
 	if err != nil {
 		details.SetText("[red]Ошибка загрузки: " + err.Error())
 	} else {
@@ -139,8 +139,7 @@ func (g *GophKeeper) VaultPage() tview.Primitive {
 		SetTitle(" Vaults ")
 
 	btns := tview.NewList().AddItem("Add", "", 'a', func() {
-		g.pages.AddAndSwitchToPage("VaultCreate", g.NewVaultPage(), true)
-
+		g.pages.SwitchToPage("VaultCreate")
 	})
 
 	// Grid: 2 столбца — список и детальный просмотр
@@ -242,8 +241,7 @@ func (g *GophKeeper) NewVaultPage() tview.Primitive {
 			return
 		}
 
-		g.pages.RemovePage("VaultList")
-		g.pages.AddAndSwitchToPage("VaultList", g.VaultPage(), true)
+		g.pages.SwitchToPage("VaultList")
 	}
 
 	cancelFunc = func() {

@@ -18,13 +18,11 @@ func (g *GophKeeper) Login(email, password string) error {
 	return nil
 }
 
-// TODO: pass hash realize
 func (g *GophKeeper) Register(email, password string) error {
 	_, err := g.client.Register(g.rootCtx, &pb.RegisterRequest{
 		Login:    email,
 		Password: g.hashPassword(password),
 	})
-
 	if err != nil {
 		return err
 	}
@@ -32,6 +30,6 @@ func (g *GophKeeper) Register(email, password string) error {
 	return nil
 }
 
-func (g *GophKeeper) ListVaults() (*pb.ListVaultsResponse, error) {
+func (g *GophKeeper) VaultList() (*pb.ListVaultsResponse, error) {
 	return g.client.ListVaults(g.authCtx(), &pb.ListVaultsRequest{})
 }

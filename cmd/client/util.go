@@ -19,6 +19,7 @@ func (g *GophKeeper) authCtx() context.Context {
 	if g.token == "" {
 		return g.rootCtx
 	}
+
 	md := metadata.New(map[string]string{
 		"authorization": "Bearer " + g.token,
 	})

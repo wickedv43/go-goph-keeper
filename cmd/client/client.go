@@ -52,11 +52,12 @@ func NewGophKeeper(i do.Injector) (*GophKeeper, error) {
 		rootCtx:   ctx,
 		cancelCtx: cancel,
 		pages:     pages,
+		token:     "",
 	}
 
 	pages.AddPage("Login", g.LoginPage(), true, true)
 	pages.AddPage("Register", g.RegisterPage(), true, false)
-	pages.AddPage("VaultList", g.VaultPage(), true, false)
+	pages.AddPage("VaultCreate", g.NewVaultPage(), true, false)
 
 	return g, nil
 }
