@@ -104,6 +104,7 @@ func (g *GophKeeper) RegisterPage() tview.Primitive {
 	return buildModal(form, errorText, 60, 12)
 }
 
+// TODO: change this view to another, login -> comma list (new vault, vault list), mb start cli test, it;s faster way
 func (g *GophKeeper) VaultListPage() tview.Primitive {
 	// Левый список
 	list := tview.NewList()
