@@ -14,7 +14,7 @@ import (
 	"github.com/wickedv43/go-goph-keeper/internal/storage"
 )
 
-var configPath = flag.String("c", "config.yaml", "path to config file")
+var configPath = flag.String("c", "config.server.yaml", "path to config file")
 
 func main() {
 	flag.Parse()

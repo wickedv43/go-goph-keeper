@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 
 	"github.com/samber/do/v2"
 	"github.com/spf13/cobra"
+	"github.com/wickedv43/go-goph-keeper/cmd/client/kv"
 	"github.com/wickedv43/go-goph-keeper/internal/api"
 	"github.com/wickedv43/go-goph-keeper/internal/config"
 	"github.com/wickedv43/go-goph-keeper/internal/logger"
@@ -21,18 +23,19 @@ type GophKeeper struct {
 
 	client api.GophKeeperClient
 
+	storage *kv.KV
+
 	cfg *config.Config
 	log *logger.Logger
 
 	rootCtx   context.Context
 	cancelCtx func()
-
-	token string
 }
 
 func NewGophKeeper(i do.Injector) (*GophKeeper, error) {
 	cfg := do.MustInvoke[*config.Config](i)
 	log := do.MustInvoke[*logger.Logger](i)
+	kv := do.MustInvoke[*kv.KV](i)
 
 	target := fmt.Sprintf("localhost:%s", cfg.Server.Port)
 	cc, err := grpc.Dial(
@@ -46,9 +49,10 @@ func NewGophKeeper(i do.Injector) (*GophKeeper, error) {
 	ctx, cancel := context.WithCancel(context.Background())
 
 	g := &GophKeeper{
-		cfg:    cfg,
-		log:    log,
-		client: client,
+		storage: kv,
+		cfg:     cfg,
+		log:     log,
+		client:  client,
 
 		rootCtx:   ctx,
 		cancelCtx: cancel,
@@ -58,6 +62,22 @@ func NewGophKeeper(i do.Injector) (*GophKeeper, error) {
 }
 
 func (g *GophKeeper) Start() {
+	args := os.Args[1:]
+
+	if len(args) == 0 {
+		_, err := g.storage.GetConfig()
+		if err != nil {
+			g.LoginCMD().RunE(g.rootCmd, nil)
+		}
+
+		// если не передано ни одной команды — запускаем shell
+		if err = g.ShellCMD().RunE(g.rootCmd, nil); err != nil {
+			fmt.Println("❌ Ошибка в shell:", err)
+			os.Exit(1)
+		}
+		return
+	}
+
 	err := g.rootCmd.Execute()
 	if err != nil {
 		log.Fatal(err)

@@ -6,9 +6,19 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
+	"os/exec"
+	"runtime"
 
 	"google.golang.org/grpc/metadata"
 )
+
+func clearScreen() {
+	if runtime.GOOS == "windows" {
+		exec.Command("cmd", "/c", "cls").Run()
+	} else {
+		fmt.Print("\033[2J\033[H")
+	}
+}
 
 func (g *GophKeeper) hashPassword(password string) string {
 	h := hmac.New(sha256.New, []byte(g.cfg.Master))
@@ -17,12 +27,17 @@ func (g *GophKeeper) hashPassword(password string) string {
 }
 
 func (g *GophKeeper) authCtx() context.Context {
-	if g.token == "" {
+	token, err := g.storage.GetCurrentToken()
+	if err != nil {
+		return g.rootCtx
+	}
+
+	if token == "" {
 		return g.rootCtx
 	}
 
 	md := metadata.New(map[string]string{
-		"authorization": "Bearer " + g.token,
+		"authorization": "Bearer " + token,
 	})
 	return metadata.NewOutgoingContext(g.rootCtx, md)
 }
@@ -38,6 +53,6 @@ func (g *GophKeeper) printBanner() {
               | |                       | |              
               |_|                       |_|              
 `)
-	fmt.Printf("📦 Версия: %s | 📅 Сборка: %s\n\n",
+	fmt.Printf("📦  Версия: %s | 📅  Сборка: %s\n\n",
 		buildVersion, buildDate)
 }

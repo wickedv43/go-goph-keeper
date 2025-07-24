@@ -1,13 +1,25 @@
 version: '3'
 
 tasks:
+
+  build-win:
+    desc: Сборка под Windows
+    cmds:
+      - GOOS=windows GOARCH=amd64 go build -o gk.exe ./cmd/client
+      - GOOS=windows GOARCH=amd64 go build -o gk-server.exe ./cmd/server
+
+
   generate:
     go generate ./cmd/client/
 
   server:
-    go run ./cmd/server/. -c=./config/config.local.yaml
+    desc: Запуск сервачка
+    cmds:
+      - go run ./cmd/server/. -c=./config/config.server.yaml
   client:
-    go run ./cmd/client/. login veter veter
+    desc: Запуск клиентика
+    cmds:
+      - go run ./cmd/client/.
 
 
 
@@ -26,3 +38,19 @@ tasks:
 
   protoc-create:
     protoc -I=proto/ --go_out=./internal/api/ --go_opt=paths=source_relative --go-grpc_out=./internal/api/ --go-grpc_opt=paths=source_relative proto/*.proto
+
+
+
+  login:
+    go run ./cmd/client/. login
+  register:
+    go run ./cmd/client/. register
+  new:
+    go run ./cmd/client/. new
+  list:
+    go run ./cmd/client/. get vaults
+
+  contexts:
+    go run ./cmd/client/. get contexts
+  use:
+    go run ./cmd/client/. get use

@@ -12,12 +12,16 @@ import (
 type Config struct {
 	Server   Server   `mapstructure:"server"`
 	Database Database `mapstructure:"database"`
+	KV       KV       `mapstructure:"databaseKV"`
 
 	Master string
 
 	Envinronment string `mapstructure:"envinronment"`
 }
 
+type KV struct {
+	DirPath string `mapstructure:"dirPath"`
+}
 type Server struct {
 	Port string `mapstructure:"port"`
 }
