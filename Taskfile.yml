@@ -24,7 +24,9 @@ tasks:
 
 
   test:
-    go run ./cmd/test/.
+    cmds:
+      - go test -v -coverpkg=./... -coverprofile=coverage.out -covermode=count ./...
+      - go tool cover -func coverage.out
 
 
   docker:
@@ -38,19 +40,3 @@ tasks:
 
   protoc-create:
     protoc -I=proto/ --go_out=./internal/api/ --go_opt=paths=source_relative --go-grpc_out=./internal/api/ --go-grpc_opt=paths=source_relative proto/*.proto
-
-
-
-  login:
-    go run ./cmd/client/. login
-  register:
-    go run ./cmd/client/. register
-  new:
-    go run ./cmd/client/. new
-  list:
-    go run ./cmd/client/. get vaults
-
-  contexts:
-    go run ./cmd/client/. get contexts
-  use:
-    go run ./cmd/client/. get use

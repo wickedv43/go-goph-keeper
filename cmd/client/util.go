@@ -43,7 +43,7 @@ func (g *GophKeeper) authCtx() context.Context {
 }
 
 func (g *GophKeeper) printBanner() {
-	fmt.Println(`
+	fmt.Print(`
    _____             _     _  __                         
   / ____|           | |   | |/ /                         
  | |  __  ___  _ __ | |__ | ' / ___  ___ _ __   ___ _ __ 

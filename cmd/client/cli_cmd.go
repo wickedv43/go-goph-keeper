@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"text/tabwriter"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/sqweek/dialog"
@@ -247,7 +249,7 @@ func vaultBinary(v *pb.VaultRecord) (*pb.VaultRecord, error) {
 
 func (g *GophKeeper) VaultListCMD() *cobra.Command {
 	return &cobra.Command{
-		Use:   "vault list",
+		Use:   "list",
 		Short: "Показать все записи в хранилище",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			resp, err := g.VaultList()
@@ -260,9 +262,35 @@ func (g *GophKeeper) VaultListCMD() *cobra.Command {
 				return g.shellLoop()
 			}
 
+			w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+			fmt.Fprintln(w, "ID\tTYPE\tTITLE\tUPDATED AT\tTAGS")
+
 			for _, v := range resp.Vaults {
-				fmt.Printf("📄 [%s] %s (ID: %d)\n", v.Type, v.Title, v.Id)
+				// Парсим дату
+				var formatted string
+				if t, err := time.Parse(time.RFC3339, v.UpdatedAt); err == nil {
+					formatted = t.Format("01-02-2006")
+				} else {
+					formatted = "-"
+				}
+
+				// Парсим метаданные
+				var meta map[string]string
+				var tags string
+				if err = json.Unmarshal([]byte(v.Metadata), &meta); err == nil {
+					// Пример: берём все значения и соединяем
+					for k, v := range meta {
+						tags += fmt.Sprintf("%s=%s,", k, v)
+					}
+					tags = strings.TrimSuffix(tags, ",")
+				} else {
+					tags = "-"
+				}
+
+				fmt.Fprintf(w, "%d\t%s\t%s\t%s\t%s\n", v.Id, v.Type, v.Title, formatted, tags)
 			}
+
+			w.Flush()
 
 			return g.shellLoop()
 		},
@@ -275,50 +303,69 @@ func (g *GophKeeper) VaultShowCMD(id uint64) error {
 		return fmt.Errorf("не удалось получить запись: %w", err)
 	}
 
-	fmt.Printf("📄 ID: %d\n", v.Id)
-	fmt.Printf("📌 Type: %s\n", v.Type)
-	fmt.Printf("📝 Title: %s\n", v.Title)
+	// Метаданные
+	var meta map[string]string
+	_ = json.Unmarshal([]byte(v.Metadata), &meta)
 
+	// Дата
+	updated := v.UpdatedAt
+	if t, err := time.Parse(time.RFC3339, updated); err == nil {
+		updated = t.Format("2006-01-02 15:04:05")
+	}
+
+	// Шапка
+	fmt.Println("═══════════════════════════════════════════════")
+	fmt.Printf(" %-14s : %v\n", "ID", v.Id)
+	fmt.Printf(" %-14s : %v\n", "Тип", v.Type)
+	fmt.Printf(" %-14s : %v\n", "Заголовок", v.Title)
+	fmt.Printf(" %-14s : %v\n", "Обновлено", updated)
+	if len(meta) > 0 {
+		for k, val := range meta {
+			fmt.Printf(" %-14s : %v\n", k, val)
+		}
+	}
+	fmt.Println("═══════════════════════════════════════════════")
+
+	// Данные
+	fmt.Println("🔐 Данные:")
 	switch v.Type {
 	case "login":
 		var d kv.LoginPass
-		if err := json.Unmarshal(v.EncryptedData, &d); err != nil {
-			fmt.Println("🔐 Ошибка чтения логина:", err)
+		if err := json.Unmarshal(v.EncryptedData, &d); err == nil {
+			fmt.Printf(" 👤 Login     : %s\n", d.Login)
+			fmt.Printf(" 🔑 Password  : %s\n", d.Password)
 		} else {
-			fmt.Printf("👤 Login: %s\n", d.Login)
-			fmt.Printf("🔑 Password: %s\n", d.Password)
+			fmt.Println("❌ Ошибка чтения login/pass:", err)
 		}
 
 	case "note":
 		var d kv.Note
-		if err := json.Unmarshal(v.EncryptedData, &d); err != nil {
-			fmt.Println("📝 Ошибка чтения заметки:", err)
+		if err := json.Unmarshal(v.EncryptedData, &d); err == nil {
+			fmt.Println(" 📝 Note:")
+			fmt.Println(" ---------------------------------------------")
+			fmt.Println(d.Text)
+			fmt.Println(" ---------------------------------------------")
 		} else {
-			fmt.Printf("📝 Note: %s\n", d.Text)
+			fmt.Println("❌ Ошибка чтения заметки:", err)
 		}
 
 	case "card":
 		var d kv.Card
-		if err := json.Unmarshal(v.EncryptedData, &d); err != nil {
-			fmt.Println("💳 Ошибка чтения карты:", err)
+		if err := json.Unmarshal(v.EncryptedData, &d); err == nil {
+			fmt.Printf(" 💳 Number    : %s\n", d.Number)
+			fmt.Printf(" 📆 Date      : %s\n", d.Date)
+			fmt.Printf(" 🔒 CVV       : %s\n", d.CVV)
 		} else {
-			fmt.Printf("💳 Number: %s\n", d.Number)
-			fmt.Printf("📆 Date: %s\n", d.Date)
-			fmt.Printf("🔒 CVV: %s\n", d.CVV)
+			fmt.Println("❌ Ошибка чтения карты:", err)
 		}
 
 	case "binary":
-		var meta map[string]string
 		filename := "file.bin"
-
-		if err = json.Unmarshal([]byte(v.Metadata), &meta); err == nil {
+		if meta != nil && meta["filename"] != "" {
 			filename = meta["filename"]
-			fmt.Printf("📎 File: %s (%d байт)\n", filename, len(v.EncryptedData))
-		} else {
-			fmt.Printf("📎 Binary file (%d байт)\n", len(v.EncryptedData))
 		}
+		fmt.Printf(" 📎 File      : %s (%d байт)\n", filename, len(v.EncryptedData))
 
-		// 👉 Спросить пользователя
 		fmt.Print("💾 Хотите сохранить файл? (y/n): ")
 		var answer string
 		fmt.Scanln(&answer)
@@ -326,15 +373,13 @@ func (g *GophKeeper) VaultShowCMD(id uint64) error {
 			break
 		}
 
-		// 👉 Выбрать место сохранения
 		savePath, err := dialog.File().Title("Сохранить файл как...").Save()
 		if err != nil {
 			fmt.Println("❌ Не удалось выбрать путь:", err)
 			break
 		}
 
-		err = os.WriteFile(savePath, v.EncryptedData, 0644)
-		if err != nil {
+		if err := os.WriteFile(savePath, v.EncryptedData, 0644); err != nil {
 			fmt.Println("❌ Ошибка сохранения:", err)
 		} else {
 			fmt.Println("✅ Файл сохранён в", savePath)
