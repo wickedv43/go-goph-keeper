@@ -61,3 +61,28 @@ func (g *GophKeeper) ContextListCMD() *cobra.Command {
 		},
 	}
 }
+
+//
+//func (g *GophKeeper) enterMnemo() error {
+//
+//	fmt.Println("Enter mnemonic: ")
+//	words := make([]string, 12)
+//	for i := 0; i < len(words); i++ {
+//		var word string
+//		fmt.Printf("[%d]: ", i+1)
+//
+//		if _, err = fmt.Scanln(&word); err != nil {
+//			return fmt.Errorf("word reading error: %w", err)
+//			os.Exit(0)
+//		}
+//		words[i] = word
+//	}
+//
+//	mnemo := strings.Join(words, " ")
+//	key := crypto.GenerateSeed(mnemo, password)
+//
+//	err = g.storage.SaveKey(login, key)
+//	if err != nil {
+//		return fmt.Errorf("ошибка ввода фразы: %w", err)
+//	}
+//}

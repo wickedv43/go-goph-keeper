@@ -1,11 +1,9 @@
 package main
 
 import (
-	"fmt"
 	"strings"
 
 	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/crypto"
-	"github.com/wickedv43/go-goph-keeper/cmd/client/kv"
 	pb "github.com/wickedv43/go-goph-keeper/internal/api"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -23,13 +21,6 @@ func (g *GophKeeper) Login(login, password string) error {
 	if err != nil {
 		return err
 	}
-
-	key, err := g.storage.GetCurrentKey()
-	if err != nil {
-		return kv.ErrEmptyKey
-	}
-
-	fmt.Println(key)
 
 	return nil
 }

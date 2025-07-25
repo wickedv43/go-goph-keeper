@@ -4,6 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/hex"
 	"io"
 
 	"github.com/dongri/go-mnemonic"
@@ -25,18 +26,23 @@ func GenerateSeed(words, password string) string {
 	return seed
 }
 
-// EncryptAES128 шифрует данные с 128-битным ключом (16 байт)
-func EncryptAES128(data []byte, key []byte) ([]byte, error) {
-	if len(key) != 16 {
-		return nil, errors.New("ключ должен быть 16 байт (128 бит)")
+// EncryptWithSeed шифрует data, используя hex-представление seed'а
+func EncryptWithSeed(data []byte, seedHex string) ([]byte, error) {
+	seedBytes, err := hex.DecodeString(seedHex)
+	if err != nil {
+		return nil, err
 	}
+	if len(seedBytes) < 16 {
+		return nil, errors.New("seed слишком короткий для AES-128")
+	}
+	key := seedBytes[:16]
 
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return nil, err
 	}
 
-	nonce := make([]byte, 12) // 12 байт — рекомендуемый размер для GCM
+	nonce := make([]byte, 12) // 12 байт для GCM
 	if _, err = io.ReadFull(rand.Reader, nonce); err != nil {
 		return nil, err
 	}
@@ -50,11 +56,17 @@ func EncryptAES128(data []byte, key []byte) ([]byte, error) {
 	return append(nonce, ciphertext...), nil
 }
 
-// DecryptAES128 расшифровывает данные, зашифрованные EncryptAES128
-func DecryptAES128(ciphertext []byte, key []byte) ([]byte, error) {
-	if len(key) != 16 {
-		return nil, errors.New("ключ должен быть 16 байт (128 бит)")
+// DecryptWithSeed расшифровывает data, используя hex-представление seed'а
+func DecryptWithSeed(ciphertext []byte, seedHex string) ([]byte, error) {
+	seedBytes, err := hex.DecodeString(seedHex)
+	if err != nil {
+		return nil, err
 	}
+	if len(seedBytes) < 16 {
+		return nil, errors.New("seed слишком короткий для AES-128")
+	}
+	key := seedBytes[:16]
+
 	if len(ciphertext) < 12 {
 		return nil, errors.New("слишком короткий ciphertext")
 	}

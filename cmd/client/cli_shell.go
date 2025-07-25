@@ -91,6 +91,12 @@ func (g *GophKeeper) shellLoop() error {
 			if err := g.RegisterCMD().RunE(g.rootCmd, nil); err != nil {
 				fmt.Println("❌", err)
 			}
+		case "me":
+			c, _ := g.storage.GetConfig()
+			token, _ := g.storage.GetCurrentToken()
+			key, _ := g.storage.GetCurrentKey()
+			fmt.Println(c.Current)
+			fmt.Println(token, key)
 
 		case "help", "?":
 			printHelp()

@@ -11,7 +11,6 @@ import (
 	"text/tabwriter"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/sqweek/dialog"
 	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/crypto"
@@ -43,29 +42,7 @@ func (g *GophKeeper) LoginCMD() *cobra.Command {
 
 			//
 			if err = g.Login(login, password); err != nil {
-				if errors.Is(err, kv.ErrEmptyKey) {
-					fmt.Println("Enter mnemonic: ")
-					words := make([]string, 12)
-					for i := 0; i < len(words); i++ {
-						var word string
-						fmt.Printf("[%d]: ", i+1)
-
-						if _, err = fmt.Scanln(&word); err != nil {
-							return fmt.Errorf("word reading error: %w", err)
-							os.Exit(0)
-						}
-						words[i] = word
-					}
-
-					mnemo := strings.Join(words, " ")
-					key := crypto.GenerateSeed(mnemo, password)
-
-					err = g.storage.SaveKey(login, key)
-					if err != nil {
-						return fmt.Errorf("ошибка ввода фразы: %w", err)
-					}
-				}
-				return fmt.Errorf("ошибка входа: %w", err)
+				return err
 			}
 
 			return g.shellLoop()
@@ -181,7 +158,7 @@ func (g *GophKeeper) NewVaultCMD() *cobra.Command {
 				return err
 			}
 
-			v.EncryptedData, err = crypto.EncryptAES128(v.EncryptedData, []byte(key))
+			v.EncryptedData, err = crypto.EncryptWithSeed(v.EncryptedData, key)
 			if err != nil {
 				return err
 			}
@@ -213,7 +190,6 @@ func vaultLoginPass(v *pb.VaultRecord) (*pb.VaultRecord, error) {
 		return v, fmt.Errorf("ошибка чтения названия: %w", err)
 	}
 
-	//TODO: CRYPTO???
 	v.EncryptedData, err = json.Marshal(d)
 	if err != nil {
 		return v, err
@@ -355,6 +331,15 @@ func (g *GophKeeper) VaultShowCMD() *cobra.Command {
 			v, err := g.VaultGet(id)
 			if err != nil {
 				return fmt.Errorf("не удалось получить запись: %w", err)
+			}
+
+			key, err := g.storage.GetCurrentKey()
+			if err != nil {
+				return err
+			}
+			v.EncryptedData, err = crypto.EncryptWithSeed(v.EncryptedData, key)
+			if err != nil {
+				return err
 			}
 
 			// Метаданные
