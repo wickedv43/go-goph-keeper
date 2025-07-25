@@ -64,7 +64,12 @@ func (s *KV) SaveContext(login, token string) error {
 	if cfg.Contexts == nil {
 		cfg.Contexts = make(map[string]Context)
 	}
-	cfg.Contexts[login] = Context{Token: token}
+	key, err := s.GetCurrentKey()
+	if err != nil {
+		key = ""
+	}
+
+	cfg.Contexts[login] = Context{Token: token, Key: key}
 	cfg.Current = login
 	return s.SetConfig(cfg)
 }
@@ -79,7 +84,12 @@ func (s *KV) SaveKey(login, key string) error {
 	if cfg.Contexts == nil {
 		cfg.Contexts = make(map[string]Context)
 	}
-	cfg.Contexts[login] = Context{Key: key}
+	token, err := s.GetCurrentToken()
+	if err != nil {
+		token = ""
+	}
+
+	cfg.Contexts[login] = Context{Token: token, Key: key}
 	cfg.Current = login
 	return s.SetConfig(cfg)
 }

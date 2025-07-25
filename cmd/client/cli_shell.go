@@ -96,7 +96,8 @@ func (g *GophKeeper) shellLoop() error {
 			token, _ := g.storage.GetCurrentToken()
 			key, _ := g.storage.GetCurrentKey()
 			fmt.Println(c.Current)
-			fmt.Println(token, key)
+			fmt.Println(token)
+			fmt.Println(key)
 
 		case "help", "?":
 			printHelp()

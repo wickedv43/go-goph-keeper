@@ -11,6 +11,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/sqweek/dialog"
 	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/crypto"
@@ -43,6 +44,32 @@ func (g *GophKeeper) LoginCMD() *cobra.Command {
 			//
 			if err = g.Login(login, password); err != nil {
 				return err
+			}
+
+			key, err := g.storage.GetCurrentKey()
+			if err != nil {
+				if errors.Is(err, kv.ErrEmptyKey) {
+					fmt.Println("Enter mnemonic: ")
+					words := make([]string, 12)
+					for i := 0; i < len(words); i++ {
+						var word string
+						fmt.Printf("[%d]: ", i+1)
+
+						if _, err = fmt.Scanln(&word); err != nil {
+							return fmt.Errorf("word reading error: %w", err)
+							os.Exit(0)
+						}
+						words[i] = word
+					}
+
+					mnemo := strings.Join(words, " ")
+					key = crypto.GenerateSeed(mnemo, password)
+
+					err = g.storage.SaveKey(login, key)
+					if err != nil {
+						return fmt.Errorf("ошибка ввода фразы: %w", err)
+					}
+				}
 			}
 
 			return g.shellLoop()
@@ -113,6 +140,14 @@ func (g *GophKeeper) NewVaultCMD() *cobra.Command {
 				return fmt.Errorf("ошибка чтения логина: %w", err)
 			}
 
+			//fmt.Println("Enter some tag: ")
+			//if _, err := fmt.Scanln(&v.Metadata); err != nil {
+			//	return err
+			//}
+
+			//TODO: input metadata)))
+			v.Metadata = "{}"
+
 			switch v.Type {
 			case "login":
 				var err error
@@ -144,15 +179,8 @@ func (g *GophKeeper) NewVaultCMD() *cobra.Command {
 				}
 			}
 
-			//fmt.Println("Enter some tag: ")
-			//if _, err := fmt.Scanln(&v.Metadata); err != nil {
-			//	return err
-			//}
-
-			//TODO: input metadata)))
-			v.Metadata = "{}"
-
 			//crypto
+
 			key, err := g.storage.GetCurrentKey()
 			if err != nil {
 				return err
@@ -337,7 +365,7 @@ func (g *GophKeeper) VaultShowCMD() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			v.EncryptedData, err = crypto.EncryptWithSeed(v.EncryptedData, key)
+			v.EncryptedData, err = crypto.DecryptWithSeed(v.EncryptedData, key)
 			if err != nil {
 				return err
 			}
@@ -418,6 +446,11 @@ func (g *GophKeeper) VaultShowCMD() *cobra.Command {
 				if err != nil {
 					fmt.Println("❌ Не удалось выбрать путь:", err)
 					break
+				}
+
+				// Если пользователь не указал расширение, добавим его
+				if filepath.Ext(savePath) == "" {
+					savePath += filepath.Ext(filename)
 				}
 
 				if err = os.WriteFile(savePath, v.EncryptedData, 0644); err != nil {
