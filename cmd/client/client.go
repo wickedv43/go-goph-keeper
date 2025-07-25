@@ -65,15 +65,9 @@ func (g *GophKeeper) Start() {
 	args := os.Args[1:]
 
 	if len(args) == 0 {
-		_, err := g.storage.GetConfig()
-		if err != nil {
-			g.LoginCMD().RunE(g.rootCmd, nil)
-		}
-
 		// если не передано ни одной команды — запускаем shell
-		if err = g.ShellCMD().RunE(g.rootCmd, nil); err != nil {
+		if err := g.ShellCMD().RunE(g.rootCmd, nil); err != nil {
 			fmt.Println("❌ Ошибка в shell:", err)
-			os.Exit(1)
 		}
 		return
 	}

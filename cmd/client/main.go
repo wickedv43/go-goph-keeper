@@ -43,7 +43,6 @@ func main() {
 	gophKeeper.rootCmd = rootCmd
 
 	gophKeeper.rootCmd.AddCommand(gophKeeper.LoginCMD())
-	gophKeeper.rootCmd.AddCommand(gophKeeper.RegisterCMD())
 	gophKeeper.rootCmd.AddCommand(gophKeeper.NewVaultCMD())
 	gophKeeper.rootCmd.AddCommand(gophKeeper.VaultListCMD())
 

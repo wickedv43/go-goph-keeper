@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -14,11 +13,11 @@ func (g *GophKeeper) ShellCMD() *cobra.Command {
 	return &cobra.Command{
 		Use:   "shell",
 		Short: "Интерактивная оболочка GophKeeper",
-		RunE: func(cmd *cobra.Command, args []string) error {
+		RunE: g.withAuth(func(cmd *cobra.Command, args []string) error {
 			g.printBanner() // banner)))
 			fmt.Print("\n💻 type `exit` to quit\n")
 			return g.shellLoop()
-		},
+		}),
 	}
 }
 
@@ -38,7 +37,7 @@ func (g *GophKeeper) shellLoop() error {
 
 		switch args[0] {
 		case "exit", "quit", "q":
-			fmt.Println("👋 Пока!")
+			os.Exit(0)
 			return nil
 
 		case "list":
@@ -56,12 +55,8 @@ func (g *GophKeeper) shellLoop() error {
 				fmt.Println("❌ Пример: show <id>")
 				continue
 			}
-			id, err := strconv.ParseUint(args[1], 10, 64)
-			if err != nil {
-				fmt.Println("❌ Неверный ID:", err)
-				continue
-			}
-			if err = g.VaultShowCMD(id); err != nil {
+
+			if err := g.VaultShowCMD().RunE(g.rootCmd, args); err != nil {
 				fmt.Println("❌", err)
 			}
 
@@ -70,12 +65,8 @@ func (g *GophKeeper) shellLoop() error {
 				fmt.Println("❌ Пример: delete <id>")
 				continue
 			}
-			_, err := strconv.ParseUint(args[1], 10, 64)
-			if err != nil {
-				fmt.Println("❌ Неверный ID:", err)
-				continue
-			}
-			if err = g.VaultDeleteCMD().RunE(g.rootCmd, []string{args[1]}); err != nil {
+
+			if err := g.VaultDeleteCMD().RunE(g.rootCmd, args); err != nil {
 				fmt.Println("❌", err)
 			}
 		case "contexts":
@@ -88,12 +79,17 @@ func (g *GophKeeper) shellLoop() error {
 				fmt.Println("❌ Пример: use <name>")
 				continue
 			}
-			contextName := args[1]
-			if err := g.storage.UseContext(contextName); err != nil {
+			if err := g.ContextUseCMD().RunE(g.rootCmd, args); err != nil {
 				fmt.Println("❌", err)
-			} else {
-				currentCtx = contextName
-				fmt.Printf("✅ Контекст %q активирован\n", currentCtx)
+			}
+		case "login":
+			if err := g.LoginCMD().RunE(g.rootCmd, nil); err != nil {
+				fmt.Println("❌", err)
+			}
+
+		case "register":
+			if err := g.RegisterCMD().RunE(g.rootCmd, nil); err != nil {
+				fmt.Println("❌", err)
 			}
 
 		case "help", "?":
@@ -108,11 +104,13 @@ func (g *GophKeeper) shellLoop() error {
 
 func printHelp() {
 	fmt.Println(`🔧 Команды:
+  login            войти в аккаунт или создать новый
+  contexts         список всех контекстов
+  use <name>       сменить контекст
   list            показать все записи
   get <id>        показать запись по ID
   delete <id>      удалить запись по ID
   create           создать новую запись
-  contexts         список всех контекстов
-  use <name>       сменить контекст
-  exit             выйти`)
+  logout           выйти из аккаунта
+  exit             выйти из программы`)
 }

@@ -1,6 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"strings"
+
+	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/crypto"
+	"github.com/wickedv43/go-goph-keeper/cmd/client/kv"
 	pb "github.com/wickedv43/go-goph-keeper/internal/api"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
@@ -19,20 +24,39 @@ func (g *GophKeeper) Login(login, password string) error {
 		return err
 	}
 
+	key, err := g.storage.GetCurrentKey()
+	if err != nil {
+		return kv.ErrEmptyKey
+	}
+
+	fmt.Println(key)
+
 	return nil
 }
 
-// TODO: register убрать userID
-func (g *GophKeeper) Register(login, password string) error {
+func (g *GophKeeper) Register(login, password string) ([]string, error) {
 	_, err := g.client.Register(g.rootCtx, &pb.RegisterRequest{
 		Login:    login,
 		Password: g.hashPassword(password),
 	})
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	words, err := crypto.GenerateMnemonic()
+	if err != nil {
+		return nil, err
+	}
+
+	key := crypto.GenerateSeed(words, password)
+
+	err = g.storage.SaveKey(login, key)
+	if err != nil {
+		return nil, err
+	}
+	mnemonic := strings.Split(words, " ")
+
+	return mnemonic, nil
 }
 
 func (g *GophKeeper) VaultList() (*pb.ListVaultsResponse, error) {

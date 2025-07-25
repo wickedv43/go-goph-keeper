@@ -12,7 +12,7 @@ func (g *GophKeeper) ContextUseCMD() *cobra.Command {
 		Short: "Switch context",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			name := args[0]
+			name := args[1]
 			cfg, err := g.storage.GetConfig()
 			if err != nil {
 				return err
