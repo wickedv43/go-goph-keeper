@@ -100,7 +100,7 @@ func (g *GophKeeper) RegisterCMD() *cobra.Command {
 			login = strings.TrimSpace(login)
 			password := string(passBytes)
 
-			words := make([]string, 0, 12)
+			words := make([]string, 12)
 			if words, err = g.Register(login, password); err != nil {
 				return fmt.Errorf("ошибка регистрации: %w", err)
 			}
@@ -115,7 +115,7 @@ func (g *GophKeeper) RegisterCMD() *cobra.Command {
 				fmt.Println()
 			}
 
-			return g.shellLoop()
+			return g.LoginCMD().RunE(g.rootCmd, nil)
 		},
 	}
 

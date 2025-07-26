@@ -45,6 +45,7 @@ func (s *Server) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginRespo
 		return nil, status.Errorf(codes.Internal, "ошибка генерации токена: %v", err)
 	}
 
+	s.log.Debugf("userID: ", int64(user.ID))
 	return &pb.LoginResponse{
 		Token: token,
 	}, nil
