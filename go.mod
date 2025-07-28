@@ -4,7 +4,10 @@ go 1.23.9
 
 require (
 	github.com/pkg/errors v0.9.1
+	github.com/rosedblabs/rosedb/v2 v2.4.0
 	github.com/samber/do/v2 v2.0.0-beta.7
+	github.com/spf13/viper v1.20.1
+	github.com/stretchr/testify v1.10.0
 	go.uber.org/zap v1.27.0
 	google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf v1.36.6
@@ -21,6 +24,7 @@ require (
 	github.com/charmbracelet/x/ansi v0.9.3 // indirect
 	github.com/charmbracelet/x/cellbuf v0.0.13-0.20250311204145-2c3ea96c31dd // indirect
 	github.com/charmbracelet/x/term v0.2.1 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dongri/go-mnemonic v0.0.0-20180529164210-dc9bfc04a038 // indirect
 	github.com/erikgeiser/coninput v0.0.0-20211004153227-1c3628e74d0f // indirect
 	github.com/fatih/color v1.15.0 // indirect
@@ -50,10 +54,10 @@ require (
 	github.com/olekukonko/ll v0.0.8 // indirect
 	github.com/olekukonko/tablewriter v1.0.8 // indirect
 	github.com/pelletier/go-toml/v2 v2.2.3 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/tview v0.0.0-20250625164341-a4a78f1e05cb // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/robfig/cron/v3 v3.0.0 // indirect
-	github.com/rosedblabs/rosedb/v2 v2.4.0 // indirect
 	github.com/rosedblabs/wal v1.3.8 // indirect
 	github.com/sagikazarmark/locafero v0.7.0 // indirect
 	github.com/samber/go-type-to-string v1.4.0 // indirect
@@ -62,7 +66,6 @@ require (
 	github.com/spf13/cast v1.7.1 // indirect
 	github.com/spf13/cobra v1.9.1 // indirect
 	github.com/spf13/pflag v1.0.6 // indirect
-	github.com/spf13/viper v1.20.1 // indirect
 	github.com/sqweek/dialog v0.0.0-20240226140203-065105509627 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect

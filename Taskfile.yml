@@ -28,7 +28,6 @@ tasks:
       - go test -v -coverpkg=./... -coverprofile=coverage.out -covermode=count ./...
       - go tool cover -func coverage.out
 
-
   docker:
     docker run --name my-postgres -e POSTGRES_USER=username -e POSTGRES_PASSWORD=password -e POSTGRES_DB=praktikum -p 5432:5432 -d postgres
 

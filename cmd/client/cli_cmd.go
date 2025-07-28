@@ -56,8 +56,8 @@ func (g *GophKeeper) LoginCMD() *cobra.Command {
 
 						if _, err = fmt.Scanln(&word); err != nil {
 							return fmt.Errorf("word reading error: %w", err)
-							os.Exit(0)
 						}
+
 						words[i] = word
 					}
 
@@ -105,7 +105,7 @@ func (g *GophKeeper) RegisterCMD() *cobra.Command {
 			}
 
 			//mnemo print
-			fmt.Println("💾 Save this phrase:\n")
+			fmt.Println("💾 Save this phrase:")
 			for row := 0; row < 4; row++ {
 				for col := 0; col < 3; col++ {
 					index := row + col*4
