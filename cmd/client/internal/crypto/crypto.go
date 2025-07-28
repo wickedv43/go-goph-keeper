@@ -1,3 +1,4 @@
+// Package crypto provides encryption, decryption, and mnemonic-based key generation for secure local storage.
 package crypto
 
 import (
@@ -11,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// GenerateMnemonic returns a new 12-word English mnemonic phrase for seed generation.
 func GenerateMnemonic() (string, error) {
 	words, err := mnemonic.GenerateMnemonic(128, mnemonic.LanguageEnglish)
 	if err != nil {
@@ -20,13 +22,14 @@ func GenerateMnemonic() (string, error) {
 	return words, nil
 }
 
+// GenerateSeed generates a hexadecimal seed string from a mnemonic phrase and password.
 func GenerateSeed(words, password string) string {
 	seed := mnemonic.ToSeedHex(words, password)
 
 	return seed
 }
 
-// EncryptWithSeed шифрует data, используя hex-представление seed'а
+// EncryptWithSeed encrypts the given data using AES-GCM with a key derived from the hex seed.
 func EncryptWithSeed(data []byte, seedHex string) ([]byte, error) {
 	seedBytes, err := hex.DecodeString(seedHex)
 	if err != nil {
@@ -56,7 +59,7 @@ func EncryptWithSeed(data []byte, seedHex string) ([]byte, error) {
 	return append(nonce, ciphertext...), nil
 }
 
-// DecryptWithSeed расшифровывает data, используя hex-представление seed'а
+// DecryptWithSeed decrypts the given ciphertext using AES-GCM with a key derived from the hex seed.
 func DecryptWithSeed(ciphertext []byte, seedHex string) ([]byte, error) {
 	seedBytes, err := hex.DecodeString(seedHex)
 	if err != nil {

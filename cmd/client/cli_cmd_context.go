@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// ContextUseCMD returns a Cobra command that switches the current context to the specified name.
 func (g *GophKeeper) ContextUseCMD() *cobra.Command {
 	return &cobra.Command{
 		Use:   "use [context-name]",
@@ -34,6 +35,7 @@ func (g *GophKeeper) ContextUseCMD() *cobra.Command {
 	}
 }
 
+// ContextListCMD returns a Cobra command that lists all available contexts and highlights the active one.
 func (g *GophKeeper) ContextListCMD() *cobra.Command {
 	return &cobra.Command{
 		Use:   "contexts",

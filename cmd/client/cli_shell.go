@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// ShellCMD returns the Cobra command that launches the interactive shell mode.
 func (g *GophKeeper) ShellCMD() *cobra.Command {
 	return &cobra.Command{
 		Use:   "shell",
@@ -21,6 +22,7 @@ func (g *GophKeeper) ShellCMD() *cobra.Command {
 	}
 }
 
+// shellLoop runs the REPL (read-eval-print loop) for interactive command execution.
 func (g *GophKeeper) shellLoop() error {
 	reader := bufio.NewScanner(os.Stdin)
 
@@ -109,6 +111,7 @@ func (g *GophKeeper) shellLoop() error {
 	return reader.Err()
 }
 
+// printHelp displays the list of supported commands in the interactive shell.
 func printHelp() {
 	fmt.Println(`🔧 Команды:
   login            войти в аккаунт или создать новый

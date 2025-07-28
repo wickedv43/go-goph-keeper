@@ -11,6 +11,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// Register registers a new user with the provided login and password.
 func (s *Server) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	u := &storage.User{
 		Login:        in.Login,
@@ -30,6 +31,7 @@ func (s *Server) Register(ctx context.Context, in *pb.RegisterRequest) (*pb.Regi
 	return &pb.RegisterResponse{UserId: user.ID}, nil
 }
 
+// Login authenticates a user and returns a JWT token on success.
 func (s *Server) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginResponse, error) {
 	user, err := s.service.UserByLogin(ctx, in.Login)
 	if err != nil {
@@ -51,6 +53,7 @@ func (s *Server) Login(ctx context.Context, in *pb.LoginRequest) (*pb.LoginRespo
 	}, nil
 }
 
+// CreateVault stores a new vault record for the authenticated user.
 func (s *Server) CreateVault(ctx context.Context, in *pb.CreateVaultRequest) (*emptypb.Empty, error) {
 	userID, err := UserIDFromContext(ctx)
 	if err != nil {
@@ -70,6 +73,7 @@ func (s *Server) CreateVault(ctx context.Context, in *pb.CreateVaultRequest) (*e
 	return &emptypb.Empty{}, nil
 }
 
+// GetVault retrieves a vault record by its ID.
 func (s *Server) GetVault(ctx context.Context, in *pb.GetVaultRequest) (*pb.VaultRecord, error) {
 	v, err := s.service.GetVault(ctx, in.VaultId)
 	if err != nil {
@@ -78,6 +82,7 @@ func (s *Server) GetVault(ctx context.Context, in *pb.GetVaultRequest) (*pb.Vaul
 	return mapVaultToProto(&v), nil
 }
 
+// UpdateVault updates an existing vault record belonging to the authenticated user.
 func (s *Server) UpdateVault(ctx context.Context, in *pb.VaultRecord) (*emptypb.Empty, error) {
 	userID, err := UserIDFromContext(ctx)
 	if err != nil {
@@ -98,6 +103,7 @@ func (s *Server) UpdateVault(ctx context.Context, in *pb.VaultRecord) (*emptypb.
 	return &emptypb.Empty{}, nil
 }
 
+// DeleteVault removes a vault record by its ID.
 func (s *Server) DeleteVault(ctx context.Context, in *pb.DeleteVaultRequest) (*emptypb.Empty, error) {
 
 	if err := s.service.DeleteVault(ctx, in.VaultId); err != nil {
@@ -106,6 +112,7 @@ func (s *Server) DeleteVault(ctx context.Context, in *pb.DeleteVaultRequest) (*e
 	return &emptypb.Empty{}, nil
 }
 
+// ListVaults returns all vault records associated with the authenticated user.
 func (s *Server) ListVaults(ctx context.Context, _ *pb.ListVaultsRequest) (*pb.ListVaultsResponse, error) {
 	userID, err := UserIDFromContext(ctx)
 	if err != nil {

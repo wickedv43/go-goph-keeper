@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// withAuth wraps a cobra command handler with an authorization check before execution.
 func (g *GophKeeper) withAuth(fn func(cmd *cobra.Command, args []string) error) func(cmd *cobra.Command, args []string) error {
 	return func(cmd *cobra.Command, args []string) error {
 		if len(args) > 0 {

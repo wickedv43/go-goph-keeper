@@ -6,26 +6,18 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"fmt"
-	"os/exec"
-	"runtime"
 
 	"google.golang.org/grpc/metadata"
 )
 
-func clearScreen() {
-	if runtime.GOOS == "windows" {
-		exec.Command("cmd", "/c", "cls").Run()
-	} else {
-		fmt.Print("\033[2J\033[H")
-	}
-}
-
+// hashPassword returns an HMAC-SHA256 hash of the given password using the master key.
 func (g *GophKeeper) hashPassword(password string) string {
 	h := hmac.New(sha256.New, []byte(g.cfg.Master))
 	h.Write([]byte(password))
 	return hex.EncodeToString(h.Sum(nil))
 }
 
+// authCtx returns a gRPC context with the current user's authorization token, if available.
 func (g *GophKeeper) authCtx() context.Context {
 	token, err := g.storage.GetCurrentToken()
 	if err != nil {
@@ -42,6 +34,7 @@ func (g *GophKeeper) authCtx() context.Context {
 	return metadata.NewOutgoingContext(g.rootCtx, md)
 }
 
+// printBanner prints the ASCII banner and build information to the console.
 func (g *GophKeeper) printBanner() {
 	fmt.Print(`
    _____             _     _  __                         

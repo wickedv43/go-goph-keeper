@@ -1,3 +1,4 @@
+// Package server sets up and runs the gRPC server for the GophKeeper service.
 package server
 
 import (
@@ -12,19 +13,21 @@ import (
 	"google.golang.org/grpc"
 )
 
+// Server represents a gRPC server for the GophKeeper service.
 type Server struct {
 	pb.UnimplementedGophKeeperServer
 
 	// GRPC is the underlying gRPC server instance.
 	GRPC *grpc.Server
 
-	// service
+	// service provides the business logic layer.
 	service service.GophKeeper
 
 	cfg *config.Config
 	log *zap.SugaredLogger
 }
 
+// NewServer initializes a new gRPC server with logging and authentication interceptors.
 func NewServer(i do.Injector) (*Server, error) {
 	s := &Server{
 		service: do.MustInvoke[service.GophKeeper](i),
@@ -53,6 +56,7 @@ func NewServer(i do.Injector) (*Server, error) {
 	return s, nil
 }
 
+// Start launches the gRPC server and begins listening for client connections.
 func (s *Server) Start() {
 	s.log.Debugf("grpc server port: " + s.cfg.Server.Port)
 	listen, err := net.Listen("tcp", ":"+s.cfg.Server.Port)
@@ -65,6 +69,7 @@ func (s *Server) Start() {
 	}
 }
 
+// Shutdown gracefully stops the gRPC server.
 func (s *Server) Shutdown() {
 	s.log.Debug("grpc shutdown complete ")
 	s.GRPC.GracefulStop()

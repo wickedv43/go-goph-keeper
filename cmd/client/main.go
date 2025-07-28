@@ -1,3 +1,5 @@
+// GophKeeper CLI application entry point.
+//
 //go:generate go run generate/main.go
 package main
 
@@ -7,20 +9,25 @@ import (
 
 	"github.com/samber/do/v2"
 	"github.com/spf13/cobra"
-	"github.com/wickedv43/go-goph-keeper/cmd/client/kv"
-
+	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/kv"
 	"github.com/wickedv43/go-goph-keeper/internal/config"
 	"github.com/wickedv43/go-goph-keeper/internal/logger"
 )
 
 var (
+	// buildVersion is the application version set at build time.
 	buildVersion = "N/A"
-	buildDate    = "N/A"
-	buildCommit  = "N/A"
+
+	// buildDate is the build date set at build time.
+	buildDate = "N/A"
+
+	// buildCommit is the Git commit hash set at build time.
+	buildCommit = "N/A"
 )
 
 var configPath string
 
+// main initializes the dependency container, sets up commands, and starts the CLI application.
 func main() {
 	rootCmd := &cobra.Command{
 		Use:   "gk",

@@ -7,9 +7,10 @@ import (
 	"github.com/pkg/errors"
 )
 
-// TODO: os.Getenv("JWT_SECRET")
-var jwtSecret = []byte("your-very-secret-key") // Лучше:
+// jwtSecret is the secret key used to sign JWT tokens.
+var jwtSecret = []byte("my-very-secret-key")
 
+// generateJWT generates a JWT token with the given user ID and 24-hour expiration.
 func generateJWT(userID uint64) (string, error) {
 	claims := jwt.MapClaims{
 		"user_id": userID,
@@ -21,6 +22,7 @@ func generateJWT(userID uint64) (string, error) {
 	return token.SignedString(jwtSecret)
 }
 
+// parseJWT validates the token and extracts the user ID from its claims.
 func parseJWT(tokenStr string) (uint64, error) {
 	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
 		return jwtSecret, nil

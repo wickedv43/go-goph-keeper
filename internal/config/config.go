@@ -1,3 +1,4 @@
+// Package config provides application configuration loading and parsing.
 package config
 
 import (
@@ -9,27 +10,31 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Config holds the full application configuration loaded from file.
 type Config struct {
-	Server   Server   `mapstructure:"server"`
-	Database Database `mapstructure:"database"`
-	KV       KV       `mapstructure:"databaseKV"`
-
-	Master string
-
+	Server       Server   `mapstructure:"server"`
+	Database     Database `mapstructure:"database"`
+	KV           KV       `mapstructure:"databaseKV"`
+	Master       string
 	Envinronment string `mapstructure:"envinronment"`
 }
 
-type KV struct {
-	DirPath string `mapstructure:"dirPath"`
-}
+// Server contains server-related configuration such as port.
 type Server struct {
 	Port string `mapstructure:"port"`
 }
 
+// Database contains database connection settings.
 type Database struct {
 	DSN string `mapstructure:"dsn"`
 }
 
+// KV contains configuration for key-value storage.
+type KV struct {
+	DirPath string `mapstructure:"dirPath"`
+}
+
+// NewConfig loads configuration from a file using viper and sets defaults where needed.
 func NewConfig(i do.Injector) (*Config, error) {
 	configPath := do.MustInvokeNamed[string](i, "config.path")
 	dir, file := filepath.Split(configPath)

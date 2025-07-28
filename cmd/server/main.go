@@ -1,3 +1,4 @@
+// GophKeeper server entry point. Initializes dependencies and starts the gRPC server.
 package main
 
 import (
@@ -14,8 +15,10 @@ import (
 	"github.com/wickedv43/go-goph-keeper/internal/storage"
 )
 
+// configPath defines the path to the server configuration file.
 var configPath = flag.String("c", "config.server.yaml", "path to config file")
 
+// main initializes the dependency graph, starts the gRPC server, and waits for termination signals.
 func main() {
 	flag.Parse()
 
@@ -29,8 +32,6 @@ func main() {
 	do.Provide(i, config.NewConfig)
 	do.Provide(i, logger.NewLogger)
 	do.Provide(i, server.NewServer)
-	do.Provide(i, service.NewService)
-	do.Provide(i, storage.NewStorage)
 
 	log := do.MustInvoke[*logger.Logger](i).Named("GophKeeper")
 	log.Debug("starting app...")

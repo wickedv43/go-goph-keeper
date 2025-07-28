@@ -1,3 +1,4 @@
+// Package storage provides persistent storage implementations for users and their encrypted vault records.
 package storage
 
 import (
@@ -12,12 +13,14 @@ import (
 	"gorm.io/gorm"
 )
 
+// Storage provides access to the database and handles data persistence.
 type Storage struct {
 	db *gorm.DB
 
 	log *zap.SugaredLogger
 }
 
+// NewStorage initializes the Storage instance with database connection and logger.
 func NewStorage(i do.Injector) (*Storage, error) {
 	cfg := do.MustInvoke[*config.Config](i)
 
@@ -53,6 +56,7 @@ func NewStorage(i do.Injector) (*Storage, error) {
 	return pStore, nil
 }
 
+// Shutdown closes the database connection and releases resources.
 func (s *Storage) Shutdown() error {
 	sqlDB, err := s.db.DB()
 	if err != nil {
@@ -66,6 +70,7 @@ func (s *Storage) Shutdown() error {
 	return nil
 }
 
+// HealthCheck verifies the database connection and logs the result.
 func (s *Storage) HealthCheck() error {
 	sqlDB, err := s.db.DB()
 	if err != nil {
@@ -81,6 +86,7 @@ func (s *Storage) HealthCheck() error {
 	return nil
 }
 
+// Migrate runs database schema migrations for all required models.
 func (s *Storage) Migrate() error {
 	if err := s.db.AutoMigrate(
 		&User{},

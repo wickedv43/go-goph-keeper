@@ -15,8 +15,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/sqweek/dialog"
 	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/crypto"
-	"github.com/wickedv43/go-goph-keeper/cmd/client/kv"
-
+	kv2 "github.com/wickedv43/go-goph-keeper/cmd/client/internal/kv"
 	pb "github.com/wickedv43/go-goph-keeper/internal/api"
 	"golang.org/x/term"
 )
@@ -48,7 +47,7 @@ func (g *GophKeeper) LoginCMD() *cobra.Command {
 
 			key, err := g.storage.GetCurrentKey()
 			if err != nil {
-				if errors.Is(err, kv.ErrEmptyKey) {
+				if errors.Is(err, kv2.ErrEmptyKey) {
 					fmt.Println("Enter mnemonic: ")
 					words := make([]string, 12)
 					for i := 0; i < len(words); i++ {
@@ -205,7 +204,7 @@ func (g *GophKeeper) NewVaultCMD() *cobra.Command {
 
 func vaultLoginPass(v *pb.VaultRecord) (*pb.VaultRecord, error) {
 	var (
-		d   kv.LoginPass
+		d   kv2.LoginPass
 		err error
 	)
 
@@ -228,7 +227,7 @@ func vaultLoginPass(v *pb.VaultRecord) (*pb.VaultRecord, error) {
 
 func vaultNote(v *pb.VaultRecord) (*pb.VaultRecord, error) {
 	var (
-		d   kv.Note
+		d   kv2.Note
 		err error
 	)
 
@@ -247,7 +246,7 @@ func vaultNote(v *pb.VaultRecord) (*pb.VaultRecord, error) {
 
 func vaultCard(v *pb.VaultRecord) (*pb.VaultRecord, error) {
 	var (
-		d   kv.Card
+		d   kv2.Card
 		err error
 	)
 
@@ -397,7 +396,7 @@ func (g *GophKeeper) VaultShowCMD() *cobra.Command {
 			fmt.Println("🔐 Данные:")
 			switch v.Type {
 			case "login":
-				var d kv.LoginPass
+				var d kv2.LoginPass
 				if err = json.Unmarshal(v.EncryptedData, &d); err == nil {
 					fmt.Printf(" 👤 Login     : %s\n", d.Login)
 					fmt.Printf(" 🔑 Password  : %s\n", d.Password)
@@ -406,7 +405,7 @@ func (g *GophKeeper) VaultShowCMD() *cobra.Command {
 				}
 
 			case "note":
-				var d kv.Note
+				var d kv2.Note
 				if err := json.Unmarshal(v.EncryptedData, &d); err == nil {
 					fmt.Println(" 📝 Note:")
 					fmt.Println(" ---------------------------------------------")
@@ -417,7 +416,7 @@ func (g *GophKeeper) VaultShowCMD() *cobra.Command {
 				}
 
 			case "card":
-				var d kv.Card
+				var d kv2.Card
 				if err := json.Unmarshal(v.EncryptedData, &d); err == nil {
 					fmt.Printf(" 💳 Number    : %s\n", d.Number)
 					fmt.Printf(" 📆 Date      : %s\n", d.Date)

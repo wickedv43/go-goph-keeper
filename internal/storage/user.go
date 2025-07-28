@@ -8,6 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// User represents an application user with a unique login and hashed password.
 type User struct {
 	ID           uint64    `gorm:"primaryKey"`
 	Login        string    `gorm:"uniqueIndex;size:255;not null"`
@@ -15,6 +16,7 @@ type User struct {
 	CreatedAt    time.Time `gorm:"autoCreateTime"`
 }
 
+// NewUser creates a new user if the login is not already taken.
 func (s *Storage) NewUser(ctx context.Context, u *User) (User, error) {
 	var existing User
 
@@ -26,7 +28,6 @@ func (s *Storage) NewUser(ctx context.Context, u *User) (User, error) {
 		return User{}, err
 	}
 
-	// Логин свободен, создаём нового пользователя
 	if err = s.db.WithContext(ctx).Create(u).Error; err != nil {
 		return User{}, err
 	}
@@ -34,6 +35,7 @@ func (s *Storage) NewUser(ctx context.Context, u *User) (User, error) {
 	return *u, nil
 }
 
+// User retrieves a user by their ID.
 func (s *Storage) User(ctx context.Context, id uint64) (User, error) {
 	var user User
 
@@ -45,6 +47,7 @@ func (s *Storage) User(ctx context.Context, id uint64) (User, error) {
 	return user, nil
 }
 
+// UserByLogin retrieves a user by their login.
 func (s *Storage) UserByLogin(ctx context.Context, login string) (User, error) {
 	var user User
 	result := s.db.WithContext(ctx).Where("login = ?", login).First(&user)

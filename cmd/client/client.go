@@ -8,7 +8,7 @@ import (
 
 	"github.com/samber/do/v2"
 	"github.com/spf13/cobra"
-	"github.com/wickedv43/go-goph-keeper/cmd/client/kv"
+	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/kv"
 	"github.com/wickedv43/go-goph-keeper/internal/api"
 	"github.com/wickedv43/go-goph-keeper/internal/config"
 	"github.com/wickedv43/go-goph-keeper/internal/logger"

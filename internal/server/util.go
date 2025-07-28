@@ -7,6 +7,7 @@ import (
 	"github.com/wickedv43/go-goph-keeper/internal/storage"
 )
 
+// mapVaultToProto converts a VaultRecord from the storage layer to its protobuf representation.
 func mapVaultToProto(v *storage.VaultRecord) *pb.VaultRecord {
 	return &pb.VaultRecord{
 		Id:            v.ID,

@@ -6,17 +6,30 @@ import (
 	"github.com/wickedv43/go-goph-keeper/internal/storage"
 )
 
+// GophKeeper defines the service layer interface for user and vault operations.
 type GophKeeper interface {
-	//users
+	// NewUser creates a new user.
 	NewUser(ctx context.Context, u *storage.User) (storage.User, error)
+
+	// User retrieves a user by their ID.
 	User(ctx context.Context, id uint64) (storage.User, error)
+
+	// UserByLogin retrieves a user by their login.
 	UserByLogin(ctx context.Context, login string) (storage.User, error)
 
-	// Vaults
+	// CreateVault stores a new vault record.
 	CreateVault(ctx context.Context, v *storage.VaultRecord) error
+
+	// GetVault retrieves a vault record by its ID.
 	GetVault(ctx context.Context, vID uint64) (storage.VaultRecord, error)
+
+	// UpdateVault updates an existing vault record.
 	UpdateVault(ctx context.Context, v *storage.VaultRecord) error
+
+	// ListVaults lists all vault records for the specified user.
 	ListVaults(ctx context.Context, uID uint64) ([]storage.VaultRecord, error)
+
+	// DeleteVault deletes a vault record by its ID.
 	DeleteVault(ctx context.Context, vID uint64) error
 }
 

@@ -10,13 +10,19 @@ import (
 	"google.golang.org/grpc/metadata"
 )
 
+// ErrUnauthenticated is returned when authentication fails or a token is missing.
 var ErrUnauthenticated = errors.New("unauthenticated")
 
+// contextKey is a custom type used to avoid key collisions in context values.
 type contextKey string
 
+// userIDKey is the context key used to store the authenticated user's ID.
 const userIDKey contextKey = "user_id"
+
+// bearerPrefix is the prefix used in the Authorization header for Bearer tokens.
 const bearerPrefix = "Bearer "
 
+// ChainUnaryInterceptors chains multiple gRPC unary interceptors into a single interceptor.
 func ChainUnaryInterceptors(interceptors ...grpc.UnaryServerInterceptor) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
@@ -41,7 +47,7 @@ func ChainUnaryInterceptors(interceptors ...grpc.UnaryServerInterceptor) grpc.Un
 	}
 }
 
-// The log includes method name, latency, and any returned error.
+// LogUnaryInterceptor logs request metadata including method name, duration, and error if any.
 func (s *Server) LogUnaryInterceptor() grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
@@ -61,6 +67,7 @@ func (s *Server) LogUnaryInterceptor() grpc.UnaryServerInterceptor {
 	}
 }
 
+// AuthInterceptor validates JWT tokens and injects user ID into the request context.
 func (s *Server) AuthInterceptor(excludedMethods map[string]bool) grpc.UnaryServerInterceptor {
 	return func(
 		ctx context.Context,
@@ -95,10 +102,12 @@ func (s *Server) AuthInterceptor(excludedMethods map[string]bool) grpc.UnaryServ
 	}
 }
 
+// ContextWithUserID returns a new context with the given user ID.
 func ContextWithUserID(ctx context.Context, uid uint64) context.Context {
 	return context.WithValue(ctx, userIDKey, uid)
 }
 
+// UserIDFromContext extracts the user ID from the given context.
 func UserIDFromContext(ctx context.Context) (uint64, error) {
 	uid, ok := ctx.Value(userIDKey).(uint64)
 	if !ok {

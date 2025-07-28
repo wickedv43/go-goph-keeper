@@ -1,3 +1,4 @@
+// Package service implements the business logic layer for user and vault management.
 package service
 
 import (
@@ -10,12 +11,14 @@ import (
 	"go.uber.org/zap"
 )
 
+// Service provides business logic operations using configuration, logging, and storage.
 type Service struct {
 	cfg     *config.Config     // Configuration settings.
 	logger  *zap.SugaredLogger // Structured logger.
 	storage storage.DataKeeper // Interface to storage layer.
 }
 
+// NewService constructs a new Service instance using dependency injection.
 func NewService(i do.Injector) (*Service, error) {
 	u, err := do.InvokeStruct[Service](i)
 	if err != nil {

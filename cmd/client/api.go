@@ -8,6 +8,7 @@ import (
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
+// Login performs user authentication and stores the received access token in the current context.
 func (g *GophKeeper) Login(login, password string) error {
 	resp, err := g.client.Login(g.rootCtx, &pb.LoginRequest{
 		Login:    login,
@@ -25,6 +26,7 @@ func (g *GophKeeper) Login(login, password string) error {
 	return nil
 }
 
+// Register creates a new user account and returns the generated mnemonic for local key storage.
 func (g *GophKeeper) Register(login, password string) ([]string, error) {
 	_, err := g.client.Register(g.rootCtx, &pb.RegisterRequest{
 		Login:    login,
@@ -50,22 +52,26 @@ func (g *GophKeeper) Register(login, password string) ([]string, error) {
 	return mnemonic, nil
 }
 
+// VaultList retrieves the list of vault records for the authenticated user.
 func (g *GophKeeper) VaultList() (*pb.ListVaultsResponse, error) {
 	return g.client.ListVaults(g.authCtx(), &pb.ListVaultsRequest{})
 }
 
+// VaultCreate creates a new vault record using the provided data.
 func (g *GophKeeper) VaultCreate(v *pb.VaultRecord) (*emptypb.Empty, error) {
 	return g.client.CreateVault(g.authCtx(), &pb.CreateVaultRequest{
 		Record: v,
 	})
 }
 
+// VaultGet retrieves a specific vault record by its ID.
 func (g *GophKeeper) VaultGet(id uint64) (*pb.VaultRecord, error) {
 	return g.client.GetVault(g.authCtx(), &pb.GetVaultRequest{
 		VaultId: id,
 	})
 }
 
+// VaultDelete deletes a vault record by its ID.
 func (g *GophKeeper) VaultDelete(id uint64) (*emptypb.Empty, error) {
 	return g.client.DeleteVault(g.authCtx(), &pb.DeleteVaultRequest{
 		VaultId: id,
