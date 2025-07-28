@@ -22,6 +22,7 @@ type Context struct {
 type Config struct {
 	Current  string             `json:"current"`
 	Contexts map[string]Context `json:"contexts"`
+	ServerIP string             `json:"server_ip"`
 }
 
 func (s *KV) SetConfig(cfg Config) error {

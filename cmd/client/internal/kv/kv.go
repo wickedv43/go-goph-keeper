@@ -1,3 +1,4 @@
+// Package kv provides a RoseDB-backed key-value storage used by the client.
 package kv
 
 import (
@@ -9,12 +10,14 @@ import (
 	"go.uber.org/zap"
 )
 
+// KV represents the RoseDB-based key-value storage layer with logging.
 type KV struct {
 	db *rosedb.DB
 
 	log *zap.SugaredLogger
 }
 
+// NewRoseDB initializes and returns a KV instance using the configured RoseDB directory.
 func NewRoseDB(i do.Injector) (*KV, error) {
 	cfg := do.MustInvoke[*config.Config](i)
 	log := do.MustInvoke[*logger.Logger](i)
@@ -39,6 +42,7 @@ func NewRoseDB(i do.Injector) (*KV, error) {
 	return kv, nil
 }
 
+// Shutdown closes the underlying RoseDB instance.
 func (s *KV) Shutdown() error {
 	//defer func() {
 	//	_ = os.RemoveAll("/tmp/rosedb_basic")

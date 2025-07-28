@@ -17,18 +17,27 @@
 
 ---
 
-## 📆 Установка
+## 📦 Установка
 
 ```bash
 git clone https://github.com/yourname/go-goph-keeper.git
 cd go-goph-keeper
-go build -o gk ./cmd/client
 ```
 
-Сервер:
+Сборка клиента:
 
 ```bash
-go build -o gk-server ./cmd/server
+GOOS=windows GOARCH=amd64   go build -o bin/gk.exe     ./cmd/client
+GOOS=linux   GOARCH=amd64   go build -o bin/gk-linux   ./cmd/client
+GOOS=darwin  GOARCH=amd64   go build -o bin/gk-darwin  ./cmd/client
+```
+
+Сборка сервера:
+
+```bash
+GOOS=windows GOARCH=amd64   go build -o bin/gk-server.exe     ./cmd/server
+GOOS=linux   GOARCH=amd64   go build -o bin/gk-server-linux   ./cmd/server
+GOOS=darwin  GOARCH=amd64   go build -o bin/gk-server-darwin  ./cmd/server
 ```
 
 ---
@@ -58,12 +67,15 @@ master: "your-master-key"
 
 ---
 
-## 🧠  Как пользоваться
+## 🧠 Как пользоваться
 
-* Всё взаимодействие с приложением осуществляется через интерактивную оболочку:
+Всё взаимодействие с приложением осуществляется через интерактивную оболочку:
+
 ```bash
-gk 
+gk shell
 ```
+
+Внутри интерактивной сессии доступны следующие команды:
 
 ```bash
 login              войти в аккаунт или создать новый
@@ -91,7 +103,7 @@ help / ?           список команд
 
 ## 🛠️ Используемые технологии
 
-* Go 1.23+
+* Go 1.21+
 * Cobra (CLI)
 * gRPC
 * zap (logger)
@@ -105,9 +117,11 @@ help / ?           список команд
 
 ## 📁 Структура проекта
 
-```
+````
 cmd/
   client/        — CLI-интерфейс
+    internal/kv     — хранилище данных (RoseDB)
+    internal/crypto — шифрование и генерация seed
   server/        — gRPC-сервер
 internal/
   api/           — gRPC-протоколы
@@ -116,29 +130,86 @@ internal/
   storage/       — слои хранения
   logger/        — zap-логгер
   server/        — gRPC-интерсепторы и сервер
-```
+  kv/            — внутреннее хранилище клиента на RoseDB (internal/client/kv)
+  crypto/        — шифрование и работа с seed/mnemonic```
 
 ---
 
-## 📌 Генерация gRPC
+## 🧰 Taskfile.yml
+
+Пример задач для сборки и разработки:
+
+```yaml
+version: '3'
+
+tasks:
+
+  build-win:
+    desc: Сборка под Windows
+    cmds:
+      - GOOS=windows GOARCH=amd64 go build -o gk.exe ./cmd/client
+      - GOOS=windows GOARCH=amd64 go build -o gk-server.exe ./cmd/server
+
+  generate:
+    cmds:
+      - go generate ./cmd/client/
+
+  server:
+    desc: Запуск сервачка
+    cmds:
+      - go run ./cmd/server/. -c=./config/config.server.yaml
+
+  client:
+    desc: Запуск клиентика
+    cmds:
+      - go run ./cmd/client/.
+
+  test:
+    cmds:
+      - go test -v -coverpkg=./... -coverprofile=coverage.out -covermode=count ./...
+      - go tool cover -func coverage.out
+
+  docker:
+    cmds:
+      - docker run --name my-postgres -e POSTGRES_USER=username -e POSTGRES_PASSWORD=password -e POSTGRES_DB=praktikum -p 5432:5432 -d postgres
+
+  protoc:
+    cmds:
+      - go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+      - go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+  protoc-create:
+    cmds:
+      - protoc -I=proto/ --go_out=./internal/api/ --go_opt=paths=source_relative --go-grpc_out=./internal/api/ --go-grpc_opt=paths=source_relative proto/*.proto
+````
+
+---
+
+## 📜 Генерация gRPC
 
 ```bash
- protoc -I=proto/ --go_out=./internal/api/ --go_opt=paths=source_relative --go-grpc_out=./internal/api/ --go-grpc_opt=paths=source_relative proto/*.proto
+protoc \
+  --go_out=. \
+  --go-grpc_out=. \
+  --go_opt=paths=source_relative \
+  --go-grpc_opt=paths=source_relative \
+  internal/api/api.proto
 ```
 
 ---
 
 ## ✅ ToDo
 
+* [ ] Обновление записей
 * [ ] Поддержка OTP
-
+* [ ] UI через bubbletea (TUI)
 * [ ] Интеграционные тесты
-* [ ] Экспорт/импорт данных?
+* [ ] Экспорт/импорт данных
 
 ---
 
-## 👨‍💼 Автор
+## 🧑‍💻 Автор
 
-[@wickedv43](https://github.com/wickedv43)
+[@yourname](https://github.com/yourname)
 
 ---
