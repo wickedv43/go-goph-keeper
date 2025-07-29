@@ -82,6 +82,7 @@ func (s *Server) GetVault(ctx context.Context, in *pb.GetVaultRequest) (*pb.Vaul
 	return mapVaultToProto(&v), nil
 }
 
+// TODO: delete
 // UpdateVault updates an existing vault record belonging to the authenticated user.
 func (s *Server) UpdateVault(ctx context.Context, in *pb.VaultRecord) (*emptypb.Empty, error) {
 	userID, err := UserIDFromContext(ctx)
@@ -103,6 +104,7 @@ func (s *Server) UpdateVault(ctx context.Context, in *pb.VaultRecord) (*emptypb.
 	return &emptypb.Empty{}, nil
 }
 
+// TODO: delete
 // DeleteVault removes a vault record by its ID.
 func (s *Server) DeleteVault(ctx context.Context, in *pb.DeleteVaultRequest) (*emptypb.Empty, error) {
 

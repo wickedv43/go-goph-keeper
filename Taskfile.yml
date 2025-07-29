@@ -22,6 +22,10 @@ tasks:
       - go run ./cmd/client/.
 
 
+  mock:
+    cmds:
+      - mockgen -source=internal/storage/interface.go -destination=internal/mocks/mock_storage.go -package=mocks
+      - mockgen -source=internal/service/interface.go -destination=internal/mocks/mock_service.go -package=mocks
 
   test:
     cmds:
