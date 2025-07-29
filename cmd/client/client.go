@@ -23,7 +23,7 @@ type GophKeeper struct {
 
 	client api.GophKeeperClient
 
-	storage *kv.KV
+	storage kv.Storage
 
 	cfg *config.Config
 	log *logger.Logger

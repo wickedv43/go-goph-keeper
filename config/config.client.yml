@@ -1,6 +1,7 @@
 server:
   port: 8080
 
+master: "my-very-secret-key"
 
 databaseKV:
   dirPath: "./rosedb"

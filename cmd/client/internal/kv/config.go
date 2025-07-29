@@ -23,6 +23,7 @@ type Config struct {
 	Current  string             `json:"current"`
 	Contexts map[string]Context `json:"contexts"`
 	ServerIP string             `json:"server_ip"`
+	Master   string             `json:"master"`
 }
 
 func (s *KV) SetConfig(cfg Config) error {

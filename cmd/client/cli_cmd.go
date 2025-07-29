@@ -22,89 +22,89 @@ import (
 
 func (g *GophKeeper) LoginCMD() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "login",
+		Use:   "login [login] [password]",
 		Short: "Вход в GophKeeper",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Print("🔐 Login: ")
-			var login string
-			if _, err := fmt.Scanln(&login); err != nil {
-				return fmt.Errorf("ошибка чтения логина: %w", err)
+			var login, password string
+
+			if len(args) >= 2 {
+				login = args[0]
+				password = args[1]
+			} else {
+				fmt.Print("🔐 Login: ")
+				if _, err := fmt.Scanln(&login); err != nil {
+					return fmt.Errorf("ошибка чтения логина: %w", err)
+				}
+
+				fmt.Print("🔐 Password: ")
+				passBytes, err := term.ReadPassword(int(syscall.Stdin))
+				if err != nil {
+					return fmt.Errorf("ошибка чтения пароля: %w", err)
+				}
+				fmt.Println()
+				password = string(passBytes)
 			}
 
-			fmt.Print("🔐 Password: ")
-			passBytes, err := term.ReadPassword(int(syscall.Stdin))
-			if err != nil {
-				return fmt.Errorf("ошибка чтения пароля: %w", err)
-			}
-			fmt.Println()
-
-			password := string(passBytes)
-
-			//
-			if err = g.Login(login, password); err != nil {
+			if err := g.Login(login, password); err != nil {
 				return err
 			}
 
 			key, err := g.storage.GetCurrentKey()
-			if err != nil {
-				if errors.Is(err, kv2.ErrEmptyKey) {
-					fmt.Println("Enter mnemonic: ")
-					words := make([]string, 12)
-					for i := 0; i < len(words); i++ {
-						var word string
-						fmt.Printf("[%d]: ", i+1)
-
-						if _, err = fmt.Scanln(&word); err != nil {
-							return fmt.Errorf("word reading error: %w", err)
-						}
-
-						words[i] = word
+			if err != nil && errors.Is(err, kv2.ErrEmptyKey) {
+				fmt.Println("Введите мнемоническую фразу:")
+				words := make([]string, 12)
+				for i := range words {
+					fmt.Printf("[%d]: ", i+1)
+					if _, err = fmt.Scanln(&words[i]); err != nil {
+						return fmt.Errorf("ошибка чтения слова: %w", err)
 					}
-
-					mnemo := strings.Join(words, " ")
-					key = crypto.GenerateSeed(mnemo, password)
-
-					err = g.storage.SaveKey(login, key)
-					if err != nil {
-						return fmt.Errorf("ошибка ввода фразы: %w", err)
-					}
+				}
+				mnemo := strings.Join(words, " ")
+				key = crypto.GenerateSeed(mnemo, password)
+				if err = g.storage.SaveKey(login, key); err != nil {
+					return fmt.Errorf("ошибка сохранения ключа: %w", err)
 				}
 			}
 
 			return g.shellLoop()
 		},
 	}
-
 	return cmd
 }
 
 func (g *GophKeeper) RegisterCMD() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "register",
+		Use:   "register [login] [password]",
 		Short: "Регистрация в GophKeeper",
 		RunE: func(cmd *cobra.Command, args []string) error {
-			fmt.Print("🔐 Login: ")
-			var login string
-			if _, err := fmt.Scanln(&login); err != nil {
-				return fmt.Errorf("ошибка чтения логина: %w", err)
-			}
+			var login, password string
 
-			fmt.Print("🔐 Password: ")
-			passBytes, err := term.ReadPassword(int(syscall.Stdin))
-			if err != nil {
-				return fmt.Errorf("ошибка чтения пароля: %w", err)
+			if len(args) >= 2 {
+				login = args[0]
+				password = args[1]
+			} else {
+				fmt.Print("🔐 Login: ")
+				if _, err := fmt.Scanln(&login); err != nil {
+					return fmt.Errorf("ошибка чтения логина: %w", err)
+				}
+
+				fmt.Print("🔐 Password: ")
+				passBytes, err := term.ReadPassword(int(syscall.Stdin))
+				if err != nil {
+					return fmt.Errorf("ошибка чтения пароля: %w", err)
+				}
+				fmt.Println()
+
+				password = string(passBytes)
 			}
-			fmt.Println()
 
 			login = strings.TrimSpace(login)
-			password := string(passBytes)
 
-			words := make([]string, 12)
-			if words, err = g.Register(login, password); err != nil {
+			words, err := g.Register(login, password)
+			if err != nil {
 				return fmt.Errorf("ошибка регистрации: %w", err)
 			}
 
-			//mnemo print
 			fmt.Println("💾 Save this phrase:")
 			for row := 0; row < 4; row++ {
 				for col := 0; col < 3; col++ {
@@ -114,7 +114,12 @@ func (g *GophKeeper) RegisterCMD() *cobra.Command {
 				fmt.Println()
 			}
 
-			return g.LoginCMD().RunE(g.rootCmd, nil)
+			// Автоматический вход сразу после регистрации
+			//if err = g.Login(login, password); err != nil {
+			//	return fmt.Errorf("автовход не удался: %w", err)
+			//}
+
+			return g.shellLoop()
 		},
 	}
 

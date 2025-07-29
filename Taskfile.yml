@@ -26,6 +26,9 @@ tasks:
     cmds:
       - mockgen -source=internal/storage/interface.go -destination=internal/mocks/mock_storage.go -package=mocks
       - mockgen -source=internal/service/interface.go -destination=internal/mocks/mock_service.go -package=mocks
+      - mockgen -source=internal/api/server_grpc.pb.go -destination=cmd/client/internal/mocks/mock_gophkeeper.go -package=mocks GophKeeperClient
+      - mockgen -source=cmd/client/internal/kv/interface.go -destination=cmd/client/internal/mocks/mock_storage.go -package=mocks
+
 
   test:
     cmds:
