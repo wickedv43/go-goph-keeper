@@ -13,7 +13,7 @@ func (g *GophKeeper) ContextUseCMD() *cobra.Command {
 		Short: "Switch context",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			name := args[1]
+			name := args[0]
 			cfg, err := g.storage.GetConfig()
 			if err != nil {
 				return err
@@ -28,7 +28,7 @@ func (g *GophKeeper) ContextUseCMD() *cobra.Command {
 				return fmt.Errorf("не удалось сохранить конфиг: %w", err)
 			}
 
-			fmt.Println("Context switched ✅")
+			fmt.Fprintf(cmd.OutOrStdout(), "Context switched ✅")
 
 			return g.shellLoop()
 		},
@@ -47,7 +47,7 @@ func (g *GophKeeper) ContextListCMD() *cobra.Command {
 			}
 
 			if len(cfg.Contexts) == 0 {
-				fmt.Println("Contexts empty 📭")
+				fmt.Fprintf(cmd.OutOrStdout(), "Contexts empty 📭")
 				return nil
 			}
 
@@ -56,7 +56,7 @@ func (g *GophKeeper) ContextListCMD() *cobra.Command {
 				if name == cfg.Current {
 					active = " (in use)"
 				}
-				fmt.Printf("  - %s%s\n", name, active)
+				fmt.Fprintf(cmd.OutOrStdout(), "  - %s%s\n", name, active)
 			}
 
 			return g.shellLoop()

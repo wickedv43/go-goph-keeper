@@ -3,6 +3,9 @@ package main
 import (
 	"bytes"
 	"context"
+	"encoding/json"
+	"fmt"
+	"os"
 	"strconv"
 	"testing"
 	"time"
@@ -320,4 +323,90 @@ func TestVaultListCMD_Success(t *testing.T) {
 	require.Contains(t, output, "Test Note")
 	require.Contains(t, output, "note")
 	require.Contains(t, output, "important")
+}
+
+func TestVaultLoginPass(t *testing.T) {
+	// Создаём pipe
+	r, w, _ := os.Pipe()
+	// Сохраняем оригинальный Stdin
+	origStdin := os.Stdin
+	// Подменяем Stdin
+	os.Stdin = r
+	defer func() {
+		os.Stdin = origStdin
+	}()
+
+	// Пишем в pipe то, что будет "введено" пользователем
+	go func() {
+		fmt.Fprintln(w, "mylogin") // Имитация ввода логина
+		fmt.Fprintln(w, "mypass")  // Имитация ввода пароля
+	}()
+
+	v := &pb.VaultRecord{}
+	res, err := vaultLoginPass(v)
+	require.NoError(t, err)
+
+	var data kv.LoginPass
+	err = json.Unmarshal(res.EncryptedData, &data)
+	require.NoError(t, err)
+	require.Equal(t, "mylogin", data.Login)
+	require.Equal(t, "mypass", data.Password)
+}
+
+func TestVaultNote(t *testing.T) {
+	// Создаём pipe
+	r, w, _ := os.Pipe()
+	// Сохраняем оригинальный Stdin
+	origStdin := os.Stdin
+	// Подменяем Stdin
+	os.Stdin = r
+	defer func() {
+		os.Stdin = origStdin
+	}()
+
+	// Пишем в pipe то, что будет "введено" пользователем
+	go func() {
+		fmt.Fprintln(w, "testtext")
+	}()
+
+	v := &pb.VaultRecord{}
+	res, err := vaultNote(v)
+	require.NoError(t, err)
+
+	var data kv.Note
+	err = json.Unmarshal(res.EncryptedData, &data)
+	require.NoError(t, err)
+	require.Equal(t, "testtext", data.Text)
+
+}
+
+func TestVaultCard(t *testing.T) {
+	// Создаём pipe
+	r, w, _ := os.Pipe()
+	// Сохраняем оригинальный Stdin
+	origStdin := os.Stdin
+	// Подменяем Stdin
+	os.Stdin = r
+	defer func() {
+		os.Stdin = origStdin
+	}()
+
+	// Пишем в pipe то, что будет "введено" пользователем
+	go func() {
+		fmt.Fprintln(w, "number")
+		fmt.Fprintln(w, "date")
+		fmt.Fprintln(w, "cvv")
+	}()
+
+	v := &pb.VaultRecord{}
+	res, err := vaultCard(v)
+	require.NoError(t, err)
+
+	var data kv.Card
+	err = json.Unmarshal(res.EncryptedData, &data)
+	require.NoError(t, err)
+	require.Equal(t, "number", data.Number)
+	require.Equal(t, "date", data.Date)
+	require.Equal(t, "cvv", data.CVV)
+
 }

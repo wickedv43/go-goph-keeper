@@ -21,8 +21,7 @@ import (
 type GophKeeper struct {
 	rootCmd *cobra.Command
 
-	client api.GophKeeperClient
-
+	client  api.GophKeeperClient
 	storage kv.Storage
 
 	cfg *config.Config

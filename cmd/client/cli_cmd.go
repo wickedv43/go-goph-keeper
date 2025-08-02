@@ -114,11 +114,6 @@ func (g *GophKeeper) RegisterCMD() *cobra.Command {
 				fmt.Println()
 			}
 
-			// Автоматический вход сразу после регистрации
-			//if err = g.Login(login, password); err != nil {
-			//	return fmt.Errorf("автовход не удался: %w", err)
-			//}
-
 			return g.shellLoop()
 		},
 	}

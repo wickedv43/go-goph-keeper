@@ -3,9 +3,11 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +17,6 @@ func (g *GophKeeper) ShellCMD() *cobra.Command {
 		Use:   "shell",
 		Short: "Интерактивная оболочка GophKeeper",
 		RunE: g.withAuth(func(cmd *cobra.Command, args []string) error {
-			g.printBanner() // banner)))
 			fmt.Print("\n💻 type `exit` to quit\n")
 			return g.shellLoop()
 		}),
@@ -37,78 +38,67 @@ func (g *GophKeeper) shellLoop() error {
 		line := strings.TrimSpace(reader.Text())
 		args := strings.Split(line, " ")
 
-		switch args[0] {
-		case "exit", "quit", "q":
-			os.Exit(0)
-			return nil
-
-		case "list":
-			if err := g.VaultListCMD().RunE(g.rootCmd, nil); err != nil {
-				fmt.Println("❌", err)
+		if err := g.processShellCommand(args); err != nil {
+			if errors.Is(err, io.EOF) {
+				break
 			}
-
-		case "create":
-			if err := g.NewVaultCMD().RunE(g.rootCmd, nil); err != nil {
-				fmt.Println("❌", err)
-			}
-
-		case "get":
-			if len(args) < 2 {
-				fmt.Println("❌ Пример: show <id>")
-				continue
-			}
-
-			if err := g.VaultShowCMD().RunE(g.rootCmd, args); err != nil {
-				fmt.Println("❌", err)
-			}
-
-		case "delete":
-			if len(args) < 2 {
-				fmt.Println("❌ Пример: delete <id>")
-				continue
-			}
-
-			if err := g.VaultDeleteCMD().RunE(g.rootCmd, args); err != nil {
-				fmt.Println("❌", err)
-			}
-		case "contexts":
-			if err := g.ContextListCMD().RunE(g.rootCmd, nil); err != nil {
-				fmt.Println("❌", err)
-			}
-
-		case "use":
-			if len(args) < 2 {
-				fmt.Println("❌ Пример: use <name>")
-				continue
-			}
-			if err := g.ContextUseCMD().RunE(g.rootCmd, args); err != nil {
-				fmt.Println("❌", err)
-			}
-		case "login":
-			if err := g.LoginCMD().RunE(g.rootCmd, nil); err != nil {
-				fmt.Println("❌", err)
-			}
-
-		case "register":
-			if err := g.RegisterCMD().RunE(g.rootCmd, nil); err != nil {
-				fmt.Println("❌", err)
-			}
-		case "me":
-			c, _ := g.storage.GetConfig()
-			token, _ := g.storage.GetCurrentToken()
-			key, _ := g.storage.GetCurrentKey()
-			fmt.Println(c.Current)
-			fmt.Println(token)
-			fmt.Println(key)
-
-		case "help", "?":
-			printHelp()
-		default:
-			fmt.Println("🤔 Неизвестная команда. Введите `help`")
+			fmt.Println("❌", err)
 		}
 	}
 
 	return reader.Err()
+}
+
+func (g *GophKeeper) processShellCommand(args []string) error {
+	switch args[0] {
+	case "exit", "quit", "q":
+		os.Exit(0)
+		return io.EOF
+
+	case "login":
+		if len(args) < 2 {
+			return errors.New("пример: login <username> <password>")
+		}
+		return g.LoginCMD().RunE(g.rootCmd, args)
+	case "register":
+		if len(args) < 2 {
+			return errors.New("пример: register <username> <password>")
+		}
+		return g.RegisterCMD().RunE(g.rootCmd, args)
+	case "contexts":
+		return g.ContextListCMD().RunE(g.rootCmd, args)
+	case "use":
+		if len(args) < 2 {
+			return errors.New("пример: use <ctx name>")
+		}
+		return g.ContextUseCMD().RunE(g.rootCmd, args)
+	case "list":
+		return g.VaultListCMD().RunE(g.rootCmd, nil)
+
+	case "create":
+		return g.NewVaultCMD().RunE(g.rootCmd, nil)
+
+	case "get":
+		if len(args) < 2 {
+			return errors.New("пример: get <id>")
+		}
+		return g.VaultShowCMD().RunE(g.rootCmd, args)
+
+	case "delete":
+		if len(args) < 2 {
+			return errors.New("пример: delete <id>")
+		}
+		return g.VaultDeleteCMD().RunE(g.rootCmd, args)
+
+	case "help", "?", "version", "v":
+		g.printBanner()
+
+		printHelp()
+		return nil
+
+	default:
+		return fmt.Errorf("неизвестная команда: %s", args[0])
+	}
 }
 
 // printHelp displays the list of supported commands in the interactive shell.
@@ -122,7 +112,6 @@ list               показать все записи
 get <id>           показать запись по ID
 delete <id>        удалить запись по ID
 create             создать новую запись
-me                 вывести текущую информацию о контексте
 exit / quit / q    выйти из программы
-help / ?           список команд`)
+help / version / ? список команд`)
 }

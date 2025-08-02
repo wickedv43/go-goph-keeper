@@ -31,7 +31,7 @@ func NewStorage(i do.Injector) (*Storage, error) {
 
 	db, err := gorm.Open(postgres.Open(cfg.Database.DSN), &gorm.Config{})
 	if err != nil {
-		return nil, nil //errors.Wrap(err, "Open postgres")
+		return nil, errors.Wrap(err, "Open postgres")
 	}
 
 	//

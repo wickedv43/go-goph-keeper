@@ -1,26 +1,41 @@
 package main
 
 import (
+	"bytes"
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/require"
+	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/kv"
+	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/mocks"
+	"github.com/wickedv43/go-goph-keeper/internal/config"
+	"go.uber.org/mock/gomock"
 )
 
-func TestShellCMD(t *testing.T) {
-	g := setupTestClient(t)
+func TestGophKeeper_ShellCMD_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
 
-	cmd := g.ShellCMD()
+	mockClient := mocks.NewMockGophKeeperClient(ctrl)
+	mockStorage := mocks.NewMockStorage(ctrl)
 
-	require.Equal(t, "shell", cmd.Use)
+	gk := &GophKeeper{
+		client:  mockClient,
+		storage: mockStorage,
+		rootCtx: context.Background(),
+		cfg:     &config.Config{},
+	}
 
-	err := cmd.RunE(cmd, nil)
+	mockStorage.EXPECT().
+		GetConfig().
+		Return(kv.Config{Current: "testctx"}, nil).
+		AnyTimes()
+
+	// Подмена stdout для проверки вывода
+	var buf bytes.Buffer
+	cmd := gk.ShellCMD()
+	cmd.SetOut(&buf)
+
+	err := cmd.RunE(cmd, []string{})
 	require.NoError(t, err)
-}
-
-func TestGophKeeper_shellLoop(t *testing.T) {
-	g := setupTestClient(t)
-
-	err := g.shellLoop()
-	require.NoError(t, err)
-
 }

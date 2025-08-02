@@ -60,7 +60,6 @@ func TestStorage_NewUser(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc // capture range variable
 		t.Run(tc.name, func(t *testing.T) {
 			db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherRegexp))
 			require.NoError(t, err)
@@ -141,7 +140,6 @@ func TestStorage_User(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc
 		t.Run(tc.name, func(t *testing.T) {
 			db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 			require.NoError(t, err)
@@ -226,7 +224,6 @@ func TestStorage_UserByLogin(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		tc := tc // capture range variable
 		t.Run(tc.name, func(t *testing.T) {
 			db, mock, err := sqlmock.New(sqlmock.QueryMatcherOption(sqlmock.QueryMatcherEqual))
 			require.NoError(t, err)
