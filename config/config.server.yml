@@ -1,0 +1,5 @@
+server:
+  port: 8080
+
+database:
+  dsn: postgres://username:password@localhost:5432/praktikum?sslmode=disable

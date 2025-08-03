@@ -1,3 +1,4 @@
+// Package logger provides a structured zap-based logger with dependency injection support.
 package logger
 
 import (
@@ -7,10 +8,12 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
+// Logger wraps zap.SugaredLogger for structured and human-readable logging.
 type Logger struct {
 	*zap.SugaredLogger
 }
 
+// NewLogger initializes and returns a new structured logger instance.
 func NewLogger(_ do.Injector) (*Logger, error) {
 	cfg := zap.Config{
 		Level:            zap.NewAtomicLevelAt(zap.DebugLevel),

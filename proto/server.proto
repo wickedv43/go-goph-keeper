@@ -1,0 +1,74 @@
+syntax = "proto3";
+
+package api;
+
+option go_package = "./internal/api";
+
+import "google/protobuf/empty.proto";
+
+service GophKeeper {
+  // User-related methods
+  rpc Register(RegisterRequest) returns (RegisterResponse);
+  rpc Login(LoginRequest) returns (LoginResponse);
+
+  // Vault-related methods
+  rpc CreateVault(CreateVaultRequest) returns (google.protobuf.Empty);
+  rpc GetVault(GetVaultRequest) returns (VaultRecord);
+  rpc UpdateVault(VaultRecord) returns (google.protobuf.Empty);
+  rpc ListVaults(ListVaultsRequest) returns (ListVaultsResponse);
+  rpc DeleteVault(DeleteVaultRequest) returns (google.protobuf.Empty);
+}
+
+// --- Users ---
+
+message RegisterRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message RegisterResponse {
+  uint64 user_id = 1;
+}
+
+message LoginRequest {
+  string login = 1;
+  string password = 2;
+}
+
+message LoginResponse {
+  string token = 1;
+}
+
+// --- Vault ---
+
+message CreateVaultRequest {
+  uint64 user_id = 1;
+  VaultRecord record = 2;
+}
+
+message GetVaultRequest {
+  uint64 vault_id = 1;
+}
+
+message DeleteVaultRequest {
+  uint64 vault_id = 1;
+}
+
+message ListVaultsRequest {
+  uint64 user_id = 1;
+}
+
+message ListVaultsResponse {
+  repeated VaultRecord vaults = 1;
+}
+
+message VaultRecord {
+  uint64 id = 1;
+  uint64 user_id = 2;
+  string type = 3;         // e.g., "login", "note", "card", "binary"
+  string title = 4;
+  string metadata = 5;     // as JSON string
+  bytes encrypted_data = 6;
+  string created_at = 7;   // optional ISO format
+  string updated_at = 8;   // optional ISO format
+}
