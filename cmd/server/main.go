@@ -16,7 +16,7 @@ import (
 )
 
 // configPath defines the path to the server configuration file.
-var configPath = flag.String("c", "config.server.yaml", "path to config file")
+var configPath = flag.String("c", "./config/config.server.yaml", "path to config file")
 
 // main initializes the dependency graph, starts the gRPC server, and waits for termination signals.
 func main() {

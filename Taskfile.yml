@@ -8,6 +8,18 @@ tasks:
       - GOOS=windows GOARCH=amd64 go build -o gk.exe ./cmd/client
       - GOOS=windows GOARCH=amd64 go build -o gk-server.exe ./cmd/server
 
+  build-linux:
+    desc: Сборка под Linux
+    cmds:
+      - GOOS=linux GOARCH=amd64 go build -o bin/gk-linux ./cmd/client
+      - GOOS=linux GOARCH=amd64 go build -o bin/gk-server-linux ./cmd/server
+
+  build-mac:
+    desc: Сборка под macOS
+    cmds:
+      - GOOS=darwin GOARCH=amd64 go build -o bin/gk-darwin ./cmd/client
+      - GOOS=darwin GOARCH=amd64 go build -o bin/gk-server-darwin ./cmd/server
+
 
   generate:
     go generate ./cmd/client/

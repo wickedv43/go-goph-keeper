@@ -3,9 +3,9 @@ module github.com/wickedv43/go-goph-keeper
 go 1.23.9
 
 require (
+	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/dongri/go-mnemonic v0.0.0-20180529164210-dc9bfc04a038
 	github.com/golang-jwt/jwt/v5 v5.2.2
-	github.com/golang/mock v1.6.0
 	github.com/pkg/errors v0.9.1
 	github.com/rosedblabs/rosedb/v2 v2.4.0
 	github.com/samber/do/v2 v2.0.0-beta.7
@@ -15,7 +15,6 @@ require (
 	github.com/stretchr/testify v1.10.0
 	go.uber.org/mock v0.5.2
 	go.uber.org/zap v1.27.0
-	golang.org/x/term v0.30.0
 	google.golang.org/grpc v1.73.0
 	google.golang.org/protobuf v1.36.6
 	gorm.io/driver/postgres v1.6.0
@@ -23,7 +22,6 @@ require (
 )
 
 require (
-	github.com/DATA-DOG/go-sqlmock v1.5.2 // indirect
 	github.com/TheTitanrain/w32 v0.0.0-20180517000239-4f5cfb03fabf // indirect
 	github.com/bwmarrin/snowflake v0.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
