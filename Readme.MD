@@ -238,6 +238,6 @@ protoc \
 
 ## 🧑‍💻 Автор
 
-[@wicked](https://github.com/wickedv43)
+[@wickedv43](https://github.com/wickedv43)
 
 ---
