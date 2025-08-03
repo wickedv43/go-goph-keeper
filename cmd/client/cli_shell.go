@@ -56,14 +56,8 @@ func (g *GophKeeper) processShellCommand(args []string) error {
 		return io.EOF
 
 	case "login":
-		if len(args) < 2 {
-			return errors.New("пример: login <username> <password>")
-		}
 		return g.LoginCMD().RunE(g.rootCmd, args)
 	case "register":
-		if len(args) < 2 {
-			return errors.New("пример: register <username> <password>")
-		}
 		return g.RegisterCMD().RunE(g.rootCmd, args)
 	case "contexts":
 		return g.ContextListCMD().RunE(g.rootCmd, args)
@@ -79,9 +73,6 @@ func (g *GophKeeper) processShellCommand(args []string) error {
 		return g.NewVaultCMD().RunE(g.rootCmd, nil)
 
 	case "get":
-		if len(args) < 2 {
-			return errors.New("пример: get <id>")
-		}
 		return g.VaultShowCMD().RunE(g.rootCmd, args)
 
 	case "delete":

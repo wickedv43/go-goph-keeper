@@ -2,6 +2,7 @@ package storage
 
 import (
 	"context"
+	"fmt"
 	"time"
 )
 
@@ -61,5 +62,12 @@ func (s *Storage) ListVaults(ctx context.Context, userID uint64) ([]VaultRecord,
 
 // DeleteVault deletes a vault record by its ID.
 func (s *Storage) DeleteVault(ctx context.Context, vID uint64) error {
-	return s.db.WithContext(ctx).Delete(&VaultRecord{}, vID).Error
+	res := s.db.WithContext(ctx).Delete(&VaultRecord{}, vID)
+	if res.Error != nil {
+		return res.Error
+	}
+	if res.RowsAffected == 0 {
+		return fmt.Errorf("запись с id=%d не найдена", vID)
+	}
+	return nil
 }

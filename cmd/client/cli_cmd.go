@@ -7,7 +7,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
-	"syscall"
 	"text/tabwriter"
 	"time"
 
@@ -15,46 +14,40 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/sqweek/dialog"
 	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/crypto"
-	kv2 "github.com/wickedv43/go-goph-keeper/cmd/client/internal/kv"
+	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/kv"
 	pb "github.com/wickedv43/go-goph-keeper/internal/api"
-	"golang.org/x/term"
 )
 
 func (g *GophKeeper) LoginCMD() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "login [login] [password]",
+		Use:   "login",
 		Short: "Вход в GophKeeper",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var login, password string
+			out := cmd.OutOrStdout()
 
-			if len(args) >= 2 {
-				login = args[0]
-				password = args[1]
-			} else {
-				fmt.Print("🔐 Login: ")
-				if _, err := fmt.Scanln(&login); err != nil {
-					return fmt.Errorf("ошибка чтения логина: %w", err)
-				}
-
-				fmt.Print("🔐 Password: ")
-				passBytes, err := term.ReadPassword(int(syscall.Stdin))
-				if err != nil {
-					return fmt.Errorf("ошибка чтения пароля: %w", err)
-				}
-				fmt.Println()
-				password = string(passBytes)
+			fmt.Fprint(out, "🔐 Login: ")
+			if _, err := fmt.Scanln(&login); err != nil {
+				return fmt.Errorf("ошибка чтения логина: %w", err)
 			}
 
-			if err := g.Login(login, password); err != nil {
+			fmt.Fprint(out, "🔐 Password: ")
+			_, err := fmt.Scanln(&password) //term.ReadPassword(int(syscall.Stdin))
+			if err != nil {
+				return fmt.Errorf("ошибка чтения пароля: %w", err)
+			}
+			fmt.Fprintln(out, "")
+
+			if err = g.Login(login, password); err != nil {
 				return err
 			}
 
 			key, err := g.storage.GetCurrentKey()
-			if err != nil && errors.Is(err, kv2.ErrEmptyKey) {
-				fmt.Println("Введите мнемоническую фразу:")
+			if err != nil && errors.Is(err, kv.ErrEmptyKey) {
+				fmt.Fprintln(out, "Введите мнемоническую фразу:")
 				words := make([]string, 12)
 				for i := range words {
-					fmt.Printf("[%d]: ", i+1)
+					fmt.Fprintf(out, "[%d]: ", i+1)
 					if _, err = fmt.Scanln(&words[i]); err != nil {
 						return fmt.Errorf("ошибка чтения слова: %w", err)
 					}
@@ -66,7 +59,7 @@ func (g *GophKeeper) LoginCMD() *cobra.Command {
 				}
 			}
 
-			return g.shellLoop()
+			return nil
 		},
 	}
 	return cmd
@@ -74,29 +67,23 @@ func (g *GophKeeper) LoginCMD() *cobra.Command {
 
 func (g *GophKeeper) RegisterCMD() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "register [login] [password]",
+		Use:   "register",
 		Short: "Регистрация в GophKeeper",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var login, password string
+			out := cmd.OutOrStdout()
 
-			if len(args) >= 2 {
-				login = args[0]
-				password = args[1]
-			} else {
-				fmt.Print("🔐 Login: ")
-				if _, err := fmt.Scanln(&login); err != nil {
-					return fmt.Errorf("ошибка чтения логина: %w", err)
-				}
-
-				fmt.Print("🔐 Password: ")
-				passBytes, err := term.ReadPassword(int(syscall.Stdin))
-				if err != nil {
-					return fmt.Errorf("ошибка чтения пароля: %w", err)
-				}
-				fmt.Println()
-
-				password = string(passBytes)
+			_, _ = fmt.Fprintln(out, "🔐 Login: ")
+			if _, err := fmt.Scanln(&login); err != nil {
+				return fmt.Errorf("ошибка чтения логина: %w", err)
 			}
+
+			fmt.Fprint(out, "🔐 Password: ")
+			_, err := fmt.Scanln(&password) //term.ReadPassword(int(syscall.Stdin))
+			if err != nil {
+				return fmt.Errorf("ошибка чтения пароля: %w", err)
+			}
+			fmt.Fprintln(out, "")
 
 			login = strings.TrimSpace(login)
 
@@ -105,16 +92,16 @@ func (g *GophKeeper) RegisterCMD() *cobra.Command {
 				return fmt.Errorf("ошибка регистрации: %w", err)
 			}
 
-			fmt.Println("💾 Save this phrase:")
+			_, _ = fmt.Fprintln(out, "💾 Save this phrase:")
 			for row := 0; row < 4; row++ {
 				for col := 0; col < 3; col++ {
 					index := row + col*4
-					fmt.Printf("%2d. %-8s  ", index+1, words[index])
+					fmt.Fprintf(out, "%2d. %-8s  ", index+1, words[index])
 				}
-				fmt.Println()
+				_, _ = fmt.Fprintln(out, "")
 			}
 
-			return g.shellLoop()
+			return nil
 		},
 	}
 
@@ -123,65 +110,54 @@ func (g *GophKeeper) RegisterCMD() *cobra.Command {
 
 func (g *GophKeeper) NewVaultCMD() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "create [title] [type] [data]",
+		Use:   "create",
 		Short: "create new record in GophKeeper",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			out := cmd.OutOrStdout()
 			v := &pb.VaultRecord{}
 
-			if len(args) >= 2 {
-				v.Title = args[0]
-				v.Type = args[1]
-				v.EncryptedData = []byte(args[2])
-			} else {
-				fmt.Print("Title: ")
-				if _, err := fmt.Scanln(&v.Title); err != nil {
-					return fmt.Errorf("ошибка чтения названия: %w", err)
+			fmt.Fprintln(out, "Title: ")
+			if _, err := fmt.Scanln(&v.Title); err != nil {
+				return fmt.Errorf("ошибка чтения названия: %w", err)
+			}
+
+			fmt.Fprintln(out, "Types  \"login\", \"note\", \"card\" or \"binary\"  ")
+			fmt.Fprintln(out, "Type: ")
+			if _, err := fmt.Scanln(&v.Type); err != nil {
+				return fmt.Errorf("ошибка чтения логина: %w", err)
+			}
+
+			v.Metadata = "{}"
+
+			switch v.Type {
+			case "login":
+				var err error
+
+				v, err = vaultLoginPass(v)
+				if err != nil {
+					return err
 				}
+			case "note":
+				var err error
 
-				fmt.Print("Types  \"login\", \"note\", \"card\" or \"binary\"  ")
-				fmt.Print("Type: ")
-				if _, err := fmt.Scanln(&v.Type); err != nil {
-					return fmt.Errorf("ошибка чтения логина: %w", err)
+				v, err = vaultNote(v)
+				if err != nil {
+					return err
 				}
+			case "card":
+				var err error
 
-				//TODO: input metadata)))
-				//fmt.Println("Enter some tag: ")
-				//if _, err := fmt.Scanln(&v.Metadata); err != nil {
-				//	return err
-				//}
-				v.Metadata = "{}"
-
-				switch v.Type {
-				case "login":
-					var err error
-
-					v, err = vaultLoginPass(v)
-					if err != nil {
-						return err
-					}
-				case "note":
-					var err error
-
-					v, err = vaultNote(v)
-					if err != nil {
-						return err
-					}
-				case "card":
-					var err error
-
-					v, err = vaultCard(v)
-					if err != nil {
-						return err
-					}
-				case "binary":
-					var err error
-
-					v, err = vaultBinary(v)
-					if err != nil {
-						return err
-					}
+				v, err = vaultCard(v)
+				if err != nil {
+					return err
 				}
+			case "binary":
+				var err error
 
+				v, err = vaultBinary(v)
+				if err != nil {
+					return err
+				}
 			}
 
 			//crypto
@@ -200,7 +176,7 @@ func (g *GophKeeper) NewVaultCMD() *cobra.Command {
 				return err
 			}
 
-			return g.shellLoop()
+			return nil
 		},
 	}
 
@@ -209,7 +185,7 @@ func (g *GophKeeper) NewVaultCMD() *cobra.Command {
 
 func vaultLoginPass(v *pb.VaultRecord) (*pb.VaultRecord, error) {
 	var (
-		d   kv2.LoginPass
+		d   kv.LoginPass
 		err error
 	)
 
@@ -232,7 +208,7 @@ func vaultLoginPass(v *pb.VaultRecord) (*pb.VaultRecord, error) {
 
 func vaultNote(v *pb.VaultRecord) (*pb.VaultRecord, error) {
 	var (
-		d   kv2.Note
+		d   kv.Note
 		err error
 	)
 
@@ -251,7 +227,7 @@ func vaultNote(v *pb.VaultRecord) (*pb.VaultRecord, error) {
 
 func vaultCard(v *pb.VaultRecord) (*pb.VaultRecord, error) {
 	var (
-		d   kv2.Card
+		d   kv.Card
 		err error
 	)
 
@@ -304,14 +280,15 @@ func (g *GophKeeper) VaultListCMD() *cobra.Command {
 		Use:   "list",
 		Short: "Показать все записи в хранилище",
 		RunE: func(cmd *cobra.Command, args []string) error {
+			out := cmd.OutOrStdout()
 			resp, err := g.VaultList()
 			if err != nil {
 				return fmt.Errorf("ошибка получения списка записей: %w", err)
 			}
 
 			if len(resp.Vaults) == 0 {
-				fmt.Println("🔒 Хранилище пусто.")
-				return g.shellLoop()
+				fmt.Fprintln(out, "🔒 Хранилище пусто.")
+				return nil
 			}
 
 			w := tabwriter.NewWriter(cmd.OutOrStdout(), 0, 0, 2, ' ', 0)
@@ -344,7 +321,7 @@ func (g *GophKeeper) VaultListCMD() *cobra.Command {
 
 			w.Flush()
 
-			return g.shellLoop()
+			return nil
 		},
 	}
 }
@@ -386,49 +363,49 @@ func (g *GophKeeper) VaultShowCMD() *cobra.Command {
 			}
 
 			// Шапка
-			fmt.Println(out, "═══════════════════════════════════════════════")
-			fmt.Printf(" %-14s : %v\n", "ID", v.Id)
-			fmt.Printf(" %-14s : %v\n", "Тип", v.Type)
-			fmt.Printf(" %-14s : %v\n", "Заголовок", v.Title)
-			fmt.Printf(" %-14s : %v\n", "Обновлено", updated)
+			fmt.Fprintln(out, "═══════════════════════════════════════════════")
+			fmt.Fprintf(out, " %-14s : %v\n", "ID", v.Id)
+			fmt.Fprintf(out, " %-14s : %v\n", "Тип", v.Type)
+			fmt.Fprintf(out, " %-14s : %v\n", "Заголовок", v.Title)
+			fmt.Fprintf(out, " %-14s : %v\n", "Обновлено", updated)
 			if len(meta) > 0 {
 				for k, val := range meta {
-					fmt.Printf(" %-14s : %v\n", k, val)
+					fmt.Fprintf(out, " %-14s : %v\n", k, val)
 				}
 			}
-			fmt.Println("═══════════════════════════════════════════════")
+			fmt.Fprintln(out, "═══════════════════════════════════════════════")
 
 			// Данные
-			fmt.Println("🔐 Данные:")
+			fmt.Fprintln(out, "🔐 Данные:")
 			switch v.Type {
 			case "login":
-				var d kv2.LoginPass
+				var d kv.LoginPass
 				if err = json.Unmarshal(v.EncryptedData, &d); err == nil {
-					fmt.Printf(" 👤 Login     : %s\n", d.Login)
-					fmt.Printf(" 🔑 Password  : %s\n", d.Password)
+					fmt.Fprintf(out, " 👤 Login     : %s\n", d.Login)
+					fmt.Fprintf(out, " 🔑 Password  : %s\n", d.Password)
 				} else {
-					fmt.Println("❌ Ошибка чтения login/pass:", err)
+					fmt.Fprintln(out, "❌ Ошибка чтения login/pass:", err)
 				}
 
 			case "note":
-				var d kv2.Note
+				var d kv.Note
 				if err := json.Unmarshal(v.EncryptedData, &d); err == nil {
-					fmt.Println(" 📝 Note:")
-					fmt.Println(" ---------------------------------------------")
-					fmt.Println(d.Text)
-					fmt.Println(" ---------------------------------------------")
+					fmt.Fprintln(out, " 📝 Note:")
+					fmt.Fprintln(out, " ---------------------------------------------")
+					fmt.Fprintln(out, d.Text)
+					fmt.Fprintln(out, " ---------------------------------------------")
 				} else {
-					fmt.Println("❌ Ошибка чтения заметки:", err)
+					fmt.Fprintln(out, "❌ Ошибка чтения заметки:", err)
 				}
 
 			case "card":
-				var d kv2.Card
-				if err := json.Unmarshal(v.EncryptedData, &d); err == nil {
-					fmt.Printf(" 💳 Number    : %s\n", d.Number)
-					fmt.Printf(" 📆 Date      : %s\n", d.Date)
-					fmt.Printf(" 🔒 CVV       : %s\n", d.CVV)
+				var d kv.Card
+				if err = json.Unmarshal(v.EncryptedData, &d); err == nil {
+					fmt.Fprintf(out, " 💳 Number    : %s\n", d.Number)
+					fmt.Fprintf(out, " 📆 Date      : %s\n", d.Date)
+					fmt.Fprintf(out, " 🔒 CVV       : %s\n", d.CVV)
 				} else {
-					fmt.Println("❌ Ошибка чтения карты:", err)
+					fmt.Fprintln(out, "❌ Ошибка чтения карты:", err)
 				}
 
 			case "binary":
@@ -437,19 +414,19 @@ func (g *GophKeeper) VaultShowCMD() *cobra.Command {
 				if meta != nil && meta["filename"] != "" {
 					filename = meta["filename"]
 				}
-				fmt.Printf(" 📎 File      : %s (%d байт)\n", filename, len(v.EncryptedData))
+				fmt.Fprintf(out, " 📎 File      : %s (%d байт)\n", filename, len(v.EncryptedData))
 
-				fmt.Print("💾 Download? (y/n): ")
+				fmt.Fprintln(out, "💾 Download? (y/n): ")
 				var answer string
 				fmt.Scanln(&answer)
 				if strings.ToLower(answer) != "y" {
-					break
+					return nil
 				}
 
 				var savePath string
 				savePath, err = dialog.File().Title("Сохранить файл как...").Save()
 				if err != nil {
-					fmt.Println("❌ Не удалось выбрать путь:", err)
+					fmt.Fprintln(out, "❌ Не удалось выбрать путь:", err)
 					break
 				}
 
@@ -459,16 +436,16 @@ func (g *GophKeeper) VaultShowCMD() *cobra.Command {
 				}
 
 				if err = os.WriteFile(savePath, v.EncryptedData, 0644); err != nil {
-					fmt.Println("❌ Ошибка сохранения:", err)
+					fmt.Fprintln(out, "❌ Ошибка сохранения:", err)
 				} else {
-					fmt.Println("✅ Файл сохранён в", savePath)
+					fmt.Fprintln(out, "✅ Файл сохранён в", savePath)
 				}
 
 			default:
-				fmt.Println("🤷 Неизвестный тип данных")
+				fmt.Fprintln(out, "🤷 Неизвестный тип данных")
 			}
 
-			return g.shellLoop()
+			return nil
 		},
 	}
 }
@@ -479,6 +456,7 @@ func (g *GophKeeper) VaultDeleteCMD() *cobra.Command {
 		Short: "Удалить запись по ID",
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			out := cmd.OutOrStdout()
 			id, err := strconv.ParseUint(args[1], 10, 64)
 			if err != nil {
 				return fmt.Errorf("неверный ID: %w", err)
@@ -487,8 +465,8 @@ func (g *GophKeeper) VaultDeleteCMD() *cobra.Command {
 			if err != nil {
 				return fmt.Errorf("ошибка удаления: %w", err)
 			}
-			fmt.Println("✅ Запись удалена.")
-			return g.shellLoop()
+			_, _ = fmt.Fprintln(out, "✅ Запись удалена.")
+			return nil
 		},
 	}
 }
