@@ -49,6 +49,7 @@ func (g *GophKeeper) shellLoop() error {
 	return reader.Err()
 }
 
+// change case to map
 func (g *GophKeeper) processShellCommand(args []string) error {
 	switch args[0] {
 	case "exit", "quit", "q":

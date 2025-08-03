@@ -12,11 +12,11 @@ import (
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/stretchr/testify/require"
-	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/crypto"
 	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/kv"
 	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/mocks"
 	pb "github.com/wickedv43/go-goph-keeper/internal/api"
 	"github.com/wickedv43/go-goph-keeper/internal/config"
+	"github.com/wickedv43/go-goph-keeper/pkg/crypto"
 	"go.uber.org/mock/gomock"
 	"google.golang.org/protobuf/types/known/emptypb"
 )

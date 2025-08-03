@@ -46,8 +46,9 @@ func TestGophKeeper_Login(t *testing.T) {
 			SaveContext(login, expectedToken).
 			Return(nil)
 
-		err := gk.Login(login, password)
+		token, err := gk.Login(login, password)
 		require.NoError(t, err)
+		require.NotNil(t, token)
 	})
 
 	t.Run("client error", func(t *testing.T) {
@@ -64,8 +65,9 @@ func TestGophKeeper_Login(t *testing.T) {
 			Login(gomock.Any(), gomock.Any()).
 			Return(nil, errors.New("login failed"))
 
-		err := gk.Login(login, password)
+		token, err := gk.Login(login, password)
 		require.ErrorContains(t, err, "login failed")
+		require.Contains(t, token, "")
 	})
 
 	t.Run("save context error", func(t *testing.T) {
@@ -88,8 +90,9 @@ func TestGophKeeper_Login(t *testing.T) {
 			SaveContext(login, expectedToken).
 			Return(errors.New("save error"))
 
-		err := gk.Login(login, password)
+		token, err := gk.Login(login, password)
 		require.ErrorContains(t, err, "save error")
+		require.Contains(t, token, "")
 	})
 }
 

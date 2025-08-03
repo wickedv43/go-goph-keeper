@@ -3,27 +3,28 @@ package main
 import (
 	"strings"
 
-	"github.com/wickedv43/go-goph-keeper/cmd/client/internal/crypto"
+	"github.com/pkg/errors"
 	pb "github.com/wickedv43/go-goph-keeper/internal/api"
+	"github.com/wickedv43/go-goph-keeper/pkg/crypto"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
 // Login performs user authentication and stores the received access token in the current context.
-func (g *GophKeeper) Login(login, password string) error {
+func (g *GophKeeper) Login(login, password string) (string, error) {
 	resp, err := g.client.Login(g.rootCtx, &pb.LoginRequest{
 		Login:    login,
 		Password: g.hashPassword(password),
 	})
 	if err != nil {
-		return err
+		return "", errors.Wrap(err, "login")
 	}
 
 	err = g.storage.SaveContext(login, resp.Token)
 	if err != nil {
-		return err
+		return "", errors.Wrap(err, "save context")
 	}
 
-	return nil
+	return resp.Token, nil
 }
 
 // Register creates a new user account and returns the generated mnemonic for local key storage.

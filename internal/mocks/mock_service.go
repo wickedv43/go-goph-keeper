@@ -114,6 +114,20 @@ func (mr *MockGophKeeperMockRecorder) NewUser(ctx, u any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewUser", reflect.TypeOf((*MockGophKeeper)(nil).NewUser), ctx, u)
 }
 
+// Shutdown mocks base method.
+func (m *MockGophKeeper) Shutdown() error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Shutdown")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Shutdown indicates an expected call of Shutdown.
+func (mr *MockGophKeeperMockRecorder) Shutdown() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Shutdown", reflect.TypeOf((*MockGophKeeper)(nil).Shutdown))
+}
+
 // UpdateVault mocks base method.
 func (m *MockGophKeeper) UpdateVault(ctx context.Context, v *storage.VaultRecord) error {
 	m.ctrl.T.Helper()
@@ -129,18 +143,18 @@ func (mr *MockGophKeeperMockRecorder) UpdateVault(ctx, v any) *gomock.Call {
 }
 
 // User mocks base method.
-func (m *MockGophKeeper) User(ctx context.Context, id uint64) (storage.User, error) {
+func (m *MockGophKeeper) User(ctx context.Context, uID uint64) (storage.User, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "User", ctx, id)
+	ret := m.ctrl.Call(m, "User", ctx, uID)
 	ret0, _ := ret[0].(storage.User)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // User indicates an expected call of User.
-func (mr *MockGophKeeperMockRecorder) User(ctx, id any) *gomock.Call {
+func (mr *MockGophKeeperMockRecorder) User(ctx, uID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "User", reflect.TypeOf((*MockGophKeeper)(nil).User), ctx, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "User", reflect.TypeOf((*MockGophKeeper)(nil).User), ctx, uID)
 }
 
 // UserByLogin mocks base method.

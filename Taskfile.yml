@@ -22,7 +22,9 @@ tasks:
 
 
   generate:
-    go generate ./cmd/client/
+    desc: генерация билд инфы
+    cmds:
+      - go generate ./cmd/client/
 
   server:
     desc: Запуск сервачка
@@ -35,6 +37,7 @@ tasks:
 
 
   mock:
+    desc: генерация mocks
     cmds:
       - mockgen -source=internal/storage/interface.go -destination=internal/mocks/mock_storage.go -package=mocks
       - mockgen -source=internal/service/interface.go -destination=internal/mocks/mock_service.go -package=mocks
@@ -43,13 +46,16 @@ tasks:
 
 
   test:
+    desc: тестирование с coverage
     cmds:
       - go test -v -coverpkg=./... -coverprofile=coverage.tmp.out -covermode=count ./...
       - go run ./cmd/cover .
       - go tool cover -func coverage.out
 
   docker:
-    docker run --name my-postgres -e POSTGRES_USER=username -e POSTGRES_PASSWORD=password -e POSTGRES_DB=praktikum -p 5432:5432 -d postgres
+    desc: билд базы в докере
+    cmds:
+      - docker run --name my-postgres -e POSTGRES_USER=username -e POSTGRES_PASSWORD=password -e POSTGRES_DB=praktikum -p 5432:5432 -d postgres
 
   protoc:
     cmds:
@@ -58,4 +64,6 @@ tasks:
 
 
   protoc-create:
-    protoc -I=proto/ --go_out=./internal/api/ --go_opt=paths=source_relative --go-grpc_out=./internal/api/ --go-grpc_opt=paths=source_relative proto/*.proto
+    desc: генерация прото
+    cmds:
+      - protoc -I=proto/ --go_out=./internal/api/ --go_opt=paths=source_relative --go-grpc_out=./internal/api/ --go-grpc_opt=paths=source_relative proto/*.proto
